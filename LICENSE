@@ -1,0 +1,73 @@
+ClaimShift Software License v1.0
+Copyright (c) 2026 Onelsey. All rights reserved.
+
+1. Scope
+
+This license applies to the ClaimShift software, including its source code, compiled binaries, bundled resources, documentation, and original project assets, unless a file explicitly states otherwise.
+
+This is a source-available license. It is not an open-source license as defined by the Open Source Initiative.
+
+2. Permission to Use
+
+You are granted a non-exclusive, non-transferable, revocable license to:
+
+(a) download and use official ClaimShift releases on private or public Minecraft servers, including monetized servers;
+(b) create reasonable backup copies for your own use;
+(c) modify configuration files, rules, messages, colors, formatting, and locale files for your own server;
+(d) create and share configuration presets or translations that do not contain or redistribute ClaimShift source code or compiled binaries;
+(e) inspect the publicly available source code for security review, learning, troubleshooting, and interoperability;
+(f) create a repository fork solely for preparing contributions to the official ClaimShift project; and
+(g) submit patches, pull requests, bug fixes, translations, or other contributions to the official ClaimShift project.
+
+3. Restrictions
+
+Without prior written permission from the copyright holder, you may not:
+
+(a) redistribute, mirror, republish, or host ClaimShift binaries or source code as a separate product or download;
+(b) publish or distribute modified builds of ClaimShift;
+(c) rebrand, rename, or present ClaimShift or a derivative work as your own software;
+(d) sell, sublicense, rent, license, or otherwise commercially distribute ClaimShift itself;
+(e) remove or obscure copyright, authorship, license, or attribution notices;
+(f) copy substantial portions of ClaimShift source code into another plugin, product, or project;
+(g) use the source code to create and distribute a competing or substitute implementation derived from ClaimShift; or
+(h) use a contribution-focused fork to publish releases, binaries, packages, or an independently distributed derivative project.
+
+Public GitHub forks are permitted only when they are used for contribution, review, testing, or patch development and remain clearly connected to the original ClaimShift project.
+
+4. Independent Implementations
+
+This license does not restrict independently written software that does not copy ClaimShift source code or other protected ClaimShift materials.
+
+Interoperability with ClaimShift or implementation of similar ideas, behavior, file formats, or external APIs is allowed when independently developed.
+
+5. Contributions
+
+By intentionally submitting a contribution to the official ClaimShift project, you represent that you have the right to submit it and grant the ClaimShift copyright holder a perpetual, worldwide, irrevocable, royalty-free license to use, reproduce, modify, distribute, relicense, and incorporate that contribution into ClaimShift and related official project materials.
+
+You retain copyright in your original contribution unless separately agreed otherwise.
+
+6. Official Distribution
+
+Links to official ClaimShift download pages or the official repository may be shared freely.
+
+A hosting provider, server panel, build service, or package cache may temporarily copy ClaimShift only when technically necessary to install or build an authorized official version for the licensee and when that copy is not offered as an independent public distribution.
+
+7. Name and Branding
+
+The ClaimShift name, logo, and official project branding may not be used in a way that falsely implies an unofficial project, build, service, or derivative is official or endorsed by the copyright holder.
+
+8. Termination
+
+Your rights under this license terminate automatically if you materially violate these terms. Upon termination, you must stop unauthorized use and distribution and remove unauthorized public copies under your control.
+
+9. Disclaimer of Warranty
+
+CLAIMSHIFT IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, OR ERROR-FREE OPERATION.
+
+10. Limitation of Liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE COPYRIGHT HOLDER AND CONTRIBUTORS SHALL NOT BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE SOFTWARE OR ITS USE.
+
+11. Additional Permission
+
+The copyright holder may grant additional permissions or alternative licensing terms in writing. Such permission applies only to the recipient and scope stated in that written permission.

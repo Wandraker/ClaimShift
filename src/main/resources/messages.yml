@@ -1,0 +1,13 @@
+config-version: 1
+
+theme:
+  primary: "#7C8CFF"
+  secondary: "#B287FF"
+  success: "#67E8A5"
+  warning: "#FFCE6A"
+  error: "#FF6B7A"
+  muted: "#8B93A7"
+
+prefix: "<gradient:#7C8CFF:#B287FF><bold>CLAIMSHIFT</bold></gradient> <dark_gray>»</dark_gray>"
+
+messages: {}

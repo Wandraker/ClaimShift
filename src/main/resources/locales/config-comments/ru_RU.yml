@@ -1,0 +1,33 @@
+config-version:
+  - "Внутренняя версия схемы конфигурации. Не изменяйте вручную."
+language:
+  config:
+    - "Язык комментариев во всех YAML-конфигах ClaimShift."
+  messages:
+    - "Язык встроенных сообщений игрокам и администрации. Свои сообщения не перезаписываются."
+integration:
+  provider:
+    - "Система приватов: auto, worldguard или lands. В 1.1.1 auto выбирает только полноценный динамический провайдер (WorldGuard); Lands overlay нужно выбрать явно."
+  worldguard:
+    mode:
+      - "dynamic-passthrough создаёт настоящие окна рейда: в OPEN/GRACE регион получает passthrough ALLOW."
+      - "В PROTECTED ClaimShift возвращает точное значение passthrough, которое было до его вмешательства."
+      - "overlay не меняет флаги WorldGuard и только добавляет запреты ClaimShift."
+    manage-all-owned-regions:
+      - "Безопасный режим по умолчанию — false: на новой установке ClaimShift не меняет существующие регионы WorldGuard, пока администратор явно их не включит."
+      - "Поставьте true, чтобы управлять всеми физическими не-глобальными регионами с владельцами; спавн/магазины/ивенты тогда помечайте статичными через claimshift-dynamic deny или исключения."
+      - "Административные регионы без владельцев всегда игнорируются. Унаследованные владельцы родительских регионов тоже учитываются; старые владельцы по имени разрешаются без блокирующих сетевых запросов."
+    manage-existing-passthrough-regions:
+      - "Если false, регионы, у которых passthrough ALLOW был выставлен до ClaimShift, не трогаются."
+    included-regions:
+      - "Используется при manage-all-owned-regions: false. Поддерживает region, world:region и маски * / ?."
+    excluded-regions:
+      - "Регионы, которыми ClaimShift никогда не должен управлять. Поддерживает region, world:region и * / ?."
+      - "Удобно для общих правил вроде spawn*, admin_*, world:event_*. Флаг WorldGuard claimshift-dynamic deny имеет приоритет и оставляет конкретный регион полностью статичным."
+    reconcile-interval:
+      - "Страховочный интервал синхронизации WorldGuard. Вход/выход владельца также запускает синхронизацию сразу."
+  lands:
+    mode:
+      - "Режим Lands. В ClaimShift 1.1.1 поддерживается только overlay."
+debug:
+  - "Включить дополнительную диагностику ClaimShift в консоли сервера."

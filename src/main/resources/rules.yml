@@ -1,0 +1,27 @@
+config-version: 2
+
+protection:
+  enabled: true
+  presence-policy: online-open
+  offline-delay: 10m
+  protect-unknown-offline-owners: true
+  trusted-players-bypass: true
+
+  actions:
+    block-break: true
+    block-place: true
+    containers: true
+    container-automation: true
+    interactions: true
+    entity-damage: true
+    entity-interact: true
+    entity-grief: true
+    hanging: true
+    buckets: true
+    explosions: true
+    pistons: true
+    fluids: true
+    fire: true
+
+notifications:
+  cooldown: 1500ms

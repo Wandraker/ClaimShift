@@ -1,0 +1,48 @@
+config-version:
+  - "Internal rules schema version. Do not change it manually."
+protection:
+  enabled:
+    - "Master switch for ClaimShift protection and dynamic WorldGuard access."
+  presence-policy:
+    - "Controls which owner-presence state is raidable."
+    - "online-open: at least one owner online = OPEN; after the last owner leaves, the claim stays OPEN for offline-delay, then becomes PROTECTED."
+    - "offline-open: at least one owner online = PROTECTED; after the last owner leaves, the claim stays PROTECTED for offline-delay, then becomes OPEN."
+  offline-delay:
+    - "Delay after the last effective owner disconnects before the configured offline state takes effect."
+    - "Examples: 30s, 1m, 10m, 1h. Use 0s for an immediate transition."
+  protect-unknown-offline-owners:
+    - "If true, claims whose offline timestamp is unknown after restart fail closed and remain protected until ClaimShift observes owner presence again."
+  trusted-players-bypass:
+    - "Allow owners and trusted/member players to use their own territory while ClaimShift protection is active."
+  actions:
+    block-break:
+      - "Block breaking by players."
+    block-place:
+      - "Block placement by players."
+    containers:
+      - "Opening and modifying block/entity inventories. Existing open views are re-checked after protection activates."
+    container-automation:
+      - "Hopper-style item movement and pickup across a protected claim boundary."
+    interactions:
+      - "Non-container block interactions, including physical interactions such as pressure plates."
+    entity-damage:
+      - "Player/projectile attacks and destructive entity-vs-entity damage against non-player entities."
+    entity-interact:
+      - "Right-click entity actions, armor stands, shearing, leash/unleash, and placed entities."
+    entity-grief:
+      - "Entity-driven block changes such as Endermen and similar mechanics."
+    hanging:
+      - "Paintings/item frames: placement, breaking, and item-frame content changes."
+    buckets:
+      - "Bucket fill/empty actions and capturing entities in buckets."
+    explosions:
+      - "Block destruction caused by entity and block explosions."
+    pistons:
+      - "Piston movement across protected claim boundaries; internal movement remains allowed."
+    fluids:
+      - "Water/lava flow across protected claim boundaries; internal flow remains allowed."
+    fire:
+      - "Ignition/burning and fire spread across protected claim boundaries."
+notifications:
+  cooldown:
+    - "Minimum time between repeated denial messages sent to the same player."

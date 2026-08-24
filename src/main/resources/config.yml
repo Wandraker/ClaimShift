@@ -1,0 +1,22 @@
+config-version: 1
+
+language:
+  config: en_US
+  messages: en_US
+
+integration:
+  provider: auto
+
+  worldguard:
+    mode: dynamic-passthrough
+    manage-all-owned-regions: false
+    manage-existing-passthrough-regions: false
+    included-regions: []
+    excluded-regions:
+      - __global__
+    reconcile-interval: 30s
+
+  lands:
+    mode: overlay
+
+debug: false

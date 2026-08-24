@@ -1,0 +1,43 @@
+name: ClaimShift
+version: '${version}'
+main: dev.onelsey.claimshift.ClaimShiftPlugin
+description: Configurable presence-based raid protection for existing Minecraft claims.
+author: Onelsey
+api-version: '26.2'
+folia-supported: true
+softdepend:
+  - WorldGuard
+  - Lands
+commands:
+  claimshift:
+    description: Main ClaimShift command.
+    usage: /claimshift
+    aliases: [cshift]
+permissions:
+  claimshift.admin:
+    description: Grants ClaimShift administration commands. Does not grant protection bypass.
+    default: op
+    children:
+      claimshift.reload: true
+      claimshift.sync: true
+      claimshift.info: true
+      claimshift.inspect: true
+      claimshift.language: true
+  claimshift.reload:
+    description: Safely reloads ClaimShift configuration.
+    default: op
+  claimshift.sync:
+    description: Requests immediate claim-provider reconciliation.
+    default: op
+  claimshift.info:
+    description: Shows ClaimShift runtime information.
+    default: op
+  claimshift.inspect:
+    description: Inspects ClaimShift state at the current location.
+    default: op
+  claimshift.language:
+    description: Changes ClaimShift configuration or message locale.
+    default: op
+  claimshift.bypass:
+    description: Bypasses ClaimShift active protection checks.
+    default: false
