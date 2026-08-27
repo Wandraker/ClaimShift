@@ -1,4 +1,4 @@
-# ClaimShift 1.1.1 manual test matrix
+# ClaimShift manual test matrix
 
 Use a disposable local server and two non-OP player accounts where possible.
 
@@ -9,7 +9,7 @@ Recommended stack:
 - Leaf/Paper/Purpur 26.2
 - WorldEdit 7.4.x
 - WorldGuard 7.0.18+
-- ClaimShift 1.1.1
+- current ClaimShift build
 
 ## 1. Startup
 
@@ -230,6 +230,23 @@ With protection active, test pistons, fluid/fire spread, and hopper movement:
 
 - activity entirely inside the same protected claim should remain possible where Minecraft/WorldGuard allows it;
 - movement across a protected claim boundary should be blocked when the corresponding action is enabled.
+
+## 15. Localization and command stability
+
+Switch through several bundled locales with `/claimshift language`.
+
+Expected:
+
+- messages and configuration comments change language;
+- command literals remain `/claimshift help`, `info`, `inspect`, `sync`, `reload`, `language`;
+- scope tokens remain `config`, `messages`, `both`;
+- tab completion returns stable command/scope tokens rather than translated equivalents.
+
+## 16. bStats lifecycle
+
+With `metrics.enabled: true`, start the server and verify ClaimShift enables normally with bStats available. Toggle it to `false`, run `/claimshift reload`, and verify `/claimshift info` shows metrics disabled without restarting the plugin. Re-enable it and reload again.
+
+If the server-wide bStats configuration opts out, ClaimShift must respect that setting.
 
 ## Bug report bundle
 

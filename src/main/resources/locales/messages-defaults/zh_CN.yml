@@ -1,0 +1,69 @@
+messages:
+  protected: <prefix> <error>该区域当前受 ClaimShift 保护。</error> <muted>领地：<white><claim></white></muted>
+  protected-grace: <prefix> <warning>领地将在 <white><remaining></white> 后切换状态。</warning>
+  reload-success: <prefix> <success>配置已重新加载。</success> <muted><duration> 毫秒</muted>
+  reload-failed: <prefix> <error>重新加载失败。</error> <muted><reason></muted>
+  sync-success: <prefix> <success>已请求同步。</success> <muted>领地系统：<white><provider></white></muted>
+  no-permission: <prefix> <error>你没有权限使用此命令。</error>
+  player-only: <prefix> <error>此命令只能由玩家使用。</error>
+  invalid-command: <prefix> <warning>未知子命令。</warning> <muted>请使用 <white><command></white>。</muted>
+  language-success: <prefix> <success>语言已更新。</success> <muted><scope>：<white><locale></white></muted>
+  language-failed: <prefix> <error>语言切换失败。</error> <muted><reason></muted>
+  language-usage: 用法：<white><command></white>。可用语言：<white><locales></white>。
+  language-locale-invalid: 不支持的语言。可用：<white><locales></white>。
+  language-scope-invalid: 范围必须为以下之一：<white><scopes></white>。
+  provider-missing: <prefix> <warning>没有可用的受支持领地系统。</warning>
+  help-header: <gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted>命令</muted>
+  help-line: <primary><command></primary> <muted>— <description></muted>
+  help-info-description: 显示插件运行状态和集成信息。
+  help-inspect-description: 检查当前位置的领地和保护状态。
+  help-sync-description: 请求立即同步领地系统。
+  help-reload-description: 安全地重新加载配置。
+  help-language-description: 切换配置或消息语言，同时保留自定义内容。
+  info-header: <gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted><version></muted>
+  info-line: <primary><key></primary><dark_gray>:</dark_gray> <white><value></white>
+  info-label-server: 服务器
+  info-label-runtime: 平台
+  info-label-java: Java
+  info-label-provider: 领地系统
+  info-label-provider-mode: 集成模式
+  info-label-config-locale: 配置语言
+  info-label-messages-locale: 消息语言
+  info-label-metrics: 匿名统计
+  info-label-presence-policy: 在线策略
+  info-label-offline-delay: 离线切换延迟
+  info-label-managed-regions: 受管理区域
+  info-label-open-regions: 开放区域
+  info-label-grace-regions: 等待切换区域
+  info-label-protected-regions: 受保护区域
+  info-label-skipped-passthrough: 已跳过现有 passthrough
+  inspect-header: <gradient:#7C8CFF:#B287FF><bold>领地检查</bold></gradient>
+  inspect-no-claim: <prefix> <muted>当前位置没有受支持的领地。</muted>
+  inspect-label-name: 领地
+  inspect-label-id: ID
+  inspect-label-provider: 系统
+  inspect-label-state: 状态
+  inspect-label-owners: 有效所有者
+  inspect-label-online-owners: 在线所有者
+  inspect-label-managed: 动态访问
+  inspect-label-remaining: 切换倒计时
+  scope-config: 配置注释
+  scope-messages: 消息
+  scope-both: 配置和消息
+  value-yes: 是
+  value-no: 否
+  value-none: 无
+  value-enabled: 已启用
+  value-disabled: 已禁用
+  state-open: 开放
+  state-grace: 等待
+  state-protected: 受保护
+  state-static: 静态 / 未管理
+  presence-policy-online-open: 所有者在线 = 开放
+  presence-policy-offline-open: 所有者离线 = 开放
+  provider-mode-dynamic-passthrough: 动态 passthrough
+  provider-mode-overlay: 覆盖保护
+  provider-mode-disabled: 已禁用
+  provider-mode-starting: 启动中
+  provider-mode-inactive: 未激活
+  provider-mode-unknown: 未知

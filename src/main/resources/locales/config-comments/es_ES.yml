@@ -1,0 +1,31 @@
+config-version:
+- Versión interna del esquema. No la cambies manualmente.
+language:
+  config:
+  - Idioma de los comentarios en los archivos YAML de ClaimShift.
+  messages:
+  - Idioma de los mensajes integrados para jugadores y administradores. Se conservan los mensajes personalizados.
+integration:
+  provider:
+  - 'Proveedor de claims: auto, worldguard o lands. auto selecciona un proveedor dinámico completo; Lands overlay debe seleccionarse explícitamente.'
+  worldguard:
+    mode:
+    - Modo de WorldGuard. dynamic-passthrough crea ventanas reales de raid; overlay solo añade protección de ClaimShift.
+    manage-all-owned-regions:
+    - Con false, las regiones WorldGuard existentes no se gestionan dinámicamente de forma automática.
+    manage-existing-passthrough-regions:
+    - Con false, las regiones que ya tenían passthrough ALLOW no se modifican.
+    included-regions:
+    - Regiones incluidas. Admite region, world:region y comodines * / ?.
+    excluded-regions:
+    - Regiones que ClaimShift nunca debe gestionar. claimshift-dynamic deny tiene prioridad.
+    reconcile-interval:
+    - Intervalo de seguridad para sincronizar WorldGuard. Las entradas/salidas también sincronizan inmediatamente.
+  lands:
+    mode:
+    - Lands admite actualmente solo overlay.
+metrics:
+  enabled:
+  - Activa métricas anónimas de bStats. Siempre se respeta la exclusión global de bStats.
+debug:
+- Activa diagnósticos adicionales de ClaimShift en la consola.

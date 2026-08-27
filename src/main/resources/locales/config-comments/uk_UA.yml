@@ -1,0 +1,31 @@
+config-version:
+- Внутрішня версія схеми. Не змінюйте вручну.
+language:
+  config:
+  - Мова коментарів у YAML-файлах ClaimShift.
+  messages:
+  - Мова вбудованих повідомлень для гравців та адміністрації. Власні перевизначення зберігаються.
+integration:
+  provider:
+  - 'Система приватів: auto, worldguard або lands. auto вибирає повний динамічний провайдер; Lands overlay потрібно вибирати явно.'
+  worldguard:
+    mode:
+    - Режим WorldGuard. dynamic-passthrough створює справжні вікна рейду; overlay лише додає захист ClaimShift.
+    manage-all-owned-regions:
+    - При false наявні регіони WorldGuard не керуються динамічно автоматично.
+    manage-existing-passthrough-regions:
+    - При false регіони з уже встановленим passthrough ALLOW не змінюються.
+    included-regions:
+    - Регіони для включення. Підтримує region, world:region та маски * / ?.
+    excluded-regions:
+    - Регіони, якими ClaimShift ніколи не повинен керувати. claimshift-dynamic deny має пріоритет.
+    reconcile-interval:
+    - Страхувальний інтервал синхронізації WorldGuard. Вхід/вихід також запускає негайну синхронізацію.
+  lands:
+    mode:
+    - Lands зараз підтримує лише overlay.
+metrics:
+  enabled:
+  - Увімкнути анонімну статистику bStats. Глобальне вимкнення bStats завжди враховується.
+debug:
+- Увімкнути додаткову діагностику ClaimShift у консолі.

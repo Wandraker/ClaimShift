@@ -1,0 +1,45 @@
+config-version:
+- 内部规则结构版本，请勿手动修改。
+protection:
+  enabled:
+  - ClaimShift 保护和 WorldGuard 动态访问的总开关。
+  presence-policy:
+  - 决定哪种所有者在线状态允许突袭：online-open 或 offline-open。
+  offline-delay:
+  - 最后一名有效所有者离线后的延迟。示例：30s、1m、10m、1h。
+  protect-unknown-offline-owners:
+  - 为 true 时，重启后无法确定离线时间的领地会保持受保护状态。
+  trusted-players-bypass:
+  - 允许所有者和受信任/member 玩家在保护开启时使用自己的领地。
+  actions:
+    block-break:
+    - 玩家破坏方块。
+    block-place:
+    - 玩家放置方块。
+    containers:
+    - 打开和修改容器/实体物品栏。
+    container-automation:
+    - 跨受保护边界的漏斗等容器自动化。
+    interactions:
+    - 不包含物品栏的方块交互。
+    entity-damage:
+    - 对非玩家实体造成伤害。
+    entity-interact:
+    - 与实体交互。
+    entity-grief:
+    - 实体造成的方块变化。
+    hanging:
+    - 画和物品展示框。
+    buckets:
+    - 桶相关操作。
+    explosions:
+    - 爆炸造成的方块破坏。
+    pistons:
+    - 活塞跨受保护边界移动。
+    fluids:
+    - 水/岩浆跨受保护边界流动。
+    fire:
+    - 火焰和火焰跨受保护边界蔓延。
+notifications:
+  cooldown:
+  - 向同一玩家重复发送拒绝消息之间的最小间隔。

@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.2.0
+
+Public usability and observability update.
+
+- Added optional anonymous bStats integration using plugin ID `33671`.
+- Added custom bStats charts for presence policy, active claim provider, WorldGuard mode, and message locale.
+- Added `metrics.enabled` with live enable/disable reconciliation through `/claimshift reload`; the global bStats opt-out remains respected.
+- Bundled German, Spanish, French, Polish, Brazilian Portuguese, Ukrainian, and Simplified Chinese localization in addition to English and Russian.
+- Centralized locale canonicalization and added common short-code handling such as `de`, `pt`, and `zh-cn`.
+- Fixed localization leaking into executable command syntax: command names, subcommands, and `config/messages/both` scope tokens are now code-owned and stable across every locale.
+- Usage/error messages now receive command syntax and allowed scope tokens through safe placeholders instead of embedding translatable command literals.
+- Added metrics status to `/claimshift info`.
+- Removed release-number wording from runtime/provider configuration comments.
+- Added regression tests for locale canonicalization and stable command syntax.
+- Build output now shades and relocates bStats into the ClaimShift JAR to avoid classpath conflicts.
+
 ## 1.1.1
 
 State-calculation regression fix.

@@ -1,4 +1,4 @@
-# ClaimShift 1.1.1 compatibility
+# ClaimShift compatibility
 
 ## Runtime baseline
 
@@ -12,11 +12,11 @@
 
 ## Providers
 
-| Provider | 1.1.1 mode | Dynamic raid window | Notes |
+| Provider | Mode | Dynamic raid window | Notes |
 | --- | --- | --- | --- |
 | WorldGuard 7.x | `dynamic-passthrough` | Yes | Primary integration; supports both `online-open` and `offline-open` presence policies. |
 | WorldGuard 7.x | `overlay` | No | ClaimShift only adds protection denials and does not change region flags. |
-| Lands 7.x | `overlay` | Provider-dependent | ClaimShift does not rewrite Lands roles/permissions in 1.1.1. |
+| Lands 7.x | `overlay` | Provider-dependent | ClaimShift does not rewrite Lands roles/permissions. |
 
 ClaimShift compiles against WorldGuard 7.0.18, WorldEdit 7.4.4, and LandsAPI 7.25.4. These APIs are compile-only and remain server-provided.
 

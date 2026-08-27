@@ -28,8 +28,6 @@ import java.util.Objects;
 import java.util.Set;
 
 public final class ConfigurationService {
-    public static final List<String> SUPPORTED_LOCALES = List.of("en_US", "ru_RU");
-
     private final ClaimShiftPlugin plugin;
     private final File configFile;
     private final File rulesFile;
@@ -173,7 +171,7 @@ public final class ConfigurationService {
 
         String landsMode = config.getString("integration.lands.mode", "overlay").trim().toLowerCase(Locale.ROOT);
         if (!landsMode.equals("overlay")) {
-            throw new IllegalArgumentException("Unsupported Lands mode in ClaimShift 1.1.1: " + landsMode);
+            throw new IllegalArgumentException("Unsupported Lands mode: " + landsMode);
         }
 
         return new PluginSettings(
@@ -182,6 +180,7 @@ public final class ConfigurationService {
                 provider,
                 worldGuard,
                 landsMode,
+                config.getBoolean("metrics.enabled", true),
                 config.getBoolean("debug", false)
         );
     }
@@ -278,7 +277,7 @@ public final class ConfigurationService {
         // 0.x wrote every bundled translation into messages.yml. Since 1.0.0 that
         // file contains overrides only. Remove values that are byte-for-byte equal
         // to any bundled locale for the same key; genuinely customized values stay.
-        List<YamlConfiguration> defaults = SUPPORTED_LOCALES.stream()
+        List<YamlConfiguration> defaults = LocaleCatalog.SUPPORTED_LOCALES.stream()
                 .map(locale -> loadResourceYaml("locales/messages-defaults/" + locale + ".yml"))
                 .toList();
         int removed = 0;
@@ -334,22 +333,7 @@ public final class ConfigurationService {
      * stored in config.yml. Examples: ru, ru-ru, RU_ru -> ru_RU.
      */
     public String canonicalLocale(String input) {
-        if (input == null || input.isBlank()) {
-            return null;
-        }
-        String normalized = input.trim().replace('-', '_').toLowerCase(Locale.ROOT);
-        if (normalized.equals("en") || normalized.equals("en_us")) {
-            return "en_US";
-        }
-        if (normalized.equals("ru") || normalized.equals("ru_ru")) {
-            return "ru_RU";
-        }
-        for (String supported : SUPPORTED_LOCALES) {
-            if (supported.toLowerCase(Locale.ROOT).equals(normalized)) {
-                return supported;
-            }
-        }
-        return null;
+        return LocaleCatalog.canonicalize(input);
     }
 
     public PluginSettings pluginSettings() {

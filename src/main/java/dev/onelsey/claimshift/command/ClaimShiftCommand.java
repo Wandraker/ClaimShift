@@ -9,6 +9,7 @@ import dev.onelsey.claimshift.integration.ClaimProvider;
 import dev.onelsey.claimshift.integration.ProviderDiagnostics;
 import dev.onelsey.claimshift.integration.ProviderManager;
 import dev.onelsey.claimshift.message.MessageService;
+import dev.onelsey.claimshift.metrics.MetricsService;
 import dev.onelsey.claimshift.model.ClaimState;
 import dev.onelsey.claimshift.model.ClaimStatus;
 import dev.onelsey.claimshift.protection.ProtectionService;
@@ -32,6 +33,7 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
     private final LocaleService locales;
     private final ProviderManager providers;
     private final ProtectionService protection;
+    private final MetricsService metrics;
     private final MessageService messages;
 
     public ClaimShiftCommand(
@@ -40,6 +42,7 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
             LocaleService locales,
             ProviderManager providers,
             ProtectionService protection,
+            MetricsService metrics,
             MessageService messages
     ) {
         this.plugin = plugin;
@@ -47,6 +50,7 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
         this.locales = locales;
         this.providers = providers;
         this.protection = protection;
+        this.metrics = metrics;
         this.messages = messages;
     }
 
@@ -64,7 +68,7 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
             case "inspect", "check" -> inspect(sender);
             case "language", "locale" -> language(sender, args);
             default -> {
-                messages.send(sender, "invalid-command");
+                messages.send(sender, "invalid-command", Map.of("command", Component.text(CommandSyntax.HELP)));
                 yield true;
             }
         };
@@ -80,6 +84,7 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         providers.reload();
+        metrics.reconcile();
         messages.send(sender, "reload-success", Map.of(
                 "duration", Component.text(String.valueOf(result.durationMillis()))
         ));
@@ -119,6 +124,7 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
         sendInfoLine(sender, "info-label-provider-mode", localizedProviderMode(diagnostics.mode()));
         sendInfoLine(sender, "info-label-config-locale", configuration.pluginSettings().configLocale());
         sendInfoLine(sender, "info-label-messages-locale", configuration.pluginSettings().messagesLocale());
+        sendInfoLine(sender, "info-label-metrics", messages.plain(metrics.enabled() ? "value-enabled" : "value-disabled"));
         sendInfoLine(sender, "info-label-presence-policy", localizedPresencePolicy(configuration.ruleSettings().presencePolicy()));
         sendInfoLine(sender, "info-label-offline-delay", DurationFormatter.format(configuration.ruleSettings().offlineDelay()));
 
@@ -173,7 +179,7 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
         }
         if (args.length < 2) {
             messages.send(sender, "language-failed", Map.of(
-                    "reason", messages.render("language-usage", Map.of())
+                    "reason", messages.render("language-usage", commandSyntaxPlaceholders())
             ));
             return true;
         }
@@ -193,7 +199,7 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
                 scope = LocaleService.Scope.valueOf(args[2].toUpperCase(Locale.ROOT));
             } catch (IllegalArgumentException ignored) {
                 messages.send(sender, "language-failed", Map.of(
-                        "reason", messages.render("language-scope-invalid", Map.of())
+                        "reason", messages.render("language-scope-invalid", commandSyntaxPlaceholders())
                 ));
                 return true;
             }
@@ -221,19 +227,19 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
     private void sendHelp(CommandSender sender) {
         messages.send(sender, "help-header");
         if (sender.hasPermission("claimshift.info")) {
-            sendHelpLine(sender, "/claimshift info", "help-info-description");
+            sendHelpLine(sender, CommandSyntax.INFO, "help-info-description");
         }
         if (sender.hasPermission("claimshift.inspect")) {
-            sendHelpLine(sender, "/claimshift inspect", "help-inspect-description");
+            sendHelpLine(sender, CommandSyntax.INSPECT, "help-inspect-description");
         }
         if (sender.hasPermission("claimshift.sync")) {
-            sendHelpLine(sender, "/claimshift sync", "help-sync-description");
+            sendHelpLine(sender, CommandSyntax.SYNC, "help-sync-description");
         }
         if (sender.hasPermission("claimshift.reload")) {
-            sendHelpLine(sender, "/claimshift reload", "help-reload-description");
+            sendHelpLine(sender, CommandSyntax.RELOAD, "help-reload-description");
         }
         if (sender.hasPermission("claimshift.language")) {
-            sendHelpLine(sender, "/claimshift language <locale> [scope]", "help-language-description");
+            sendHelpLine(sender, CommandSyntax.LANGUAGE, "help-language-description");
         }
     }
 
@@ -264,6 +270,14 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
             case "inactive" -> "provider-mode-inactive";
             default -> "provider-mode-unknown";
         });
+    }
+
+    private Map<String, Component> commandSyntaxPlaceholders() {
+        return Map.of(
+                "command", Component.text(CommandSyntax.LANGUAGE),
+                "locales", Component.text(String.join(", ", locales.supportedLocales())),
+                "scopes", Component.text(String.join(", ", CommandSyntax.SCOPES))
+        );
     }
 
     private void sendHelpLine(CommandSender sender, String command, String descriptionKey) {
@@ -303,7 +317,7 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
             return filter(locales.supportedLocales(), args[1]);
         }
         if (args.length == 3 && isLanguageCommand(args[0])) {
-            return filter(List.of("config", "messages", "both"), args[2]);
+            return filter(CommandSyntax.SCOPES, args[2]);
         }
         return List.of();
     }

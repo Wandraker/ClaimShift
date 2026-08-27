@@ -10,6 +10,7 @@ import dev.onelsey.claimshift.listener.PresenceListener;
 import dev.onelsey.claimshift.listener.ProtectionListener;
 import dev.onelsey.claimshift.listener.WorldLifecycleListener;
 import dev.onelsey.claimshift.message.MessageService;
+import dev.onelsey.claimshift.metrics.MetricsService;
 import dev.onelsey.claimshift.protection.ClaimStateService;
 import dev.onelsey.claimshift.protection.PresenceService;
 import dev.onelsey.claimshift.protection.ProtectionService;
@@ -21,6 +22,7 @@ import java.util.logging.Level;
 public final class ClaimShiftPlugin extends JavaPlugin {
     private ConfigurationService configuration;
     private ProviderManager providers;
+    private MetricsService metrics;
 
     @Override
     public void onLoad() {
@@ -51,6 +53,8 @@ public final class ClaimShiftPlugin extends JavaPlugin {
             presence.initialize(getServer());
             ClaimStateService states = new ClaimStateService(configuration, presence);
             providers = new ProviderManager(this, configuration, states);
+            metrics = new MetricsService(this, configuration, providers);
+            metrics.reconcile();
             ProtectionService protection = new ProtectionService(configuration, providers, states);
             MessageService messages = new MessageService(configuration);
 
@@ -64,6 +68,7 @@ public final class ClaimShiftPlugin extends JavaPlugin {
                     locales,
                     providers,
                     protection,
+                    metrics,
                     messages
             );
             PluginCommand command = getCommand("claimshift");
@@ -84,6 +89,9 @@ public final class ClaimShiftPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (metrics != null) {
+            metrics.shutdown();
+        }
         if (providers != null) {
             try {
                 providers.shutdown();

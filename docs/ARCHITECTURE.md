@@ -61,3 +61,11 @@ Rules schema 2 replaces the old `protection.activation-delay` key with `protecti
 ## Localization model
 
 Bundled locale files are immutable stock text. `messages.yml` stores theme/prefix plus explicit overrides only. Locale changes therefore replace untouched stock text immediately while preserving custom overrides. Legacy full-message files are migrated once using the configuration schema marker.
+
+## Command localization boundary
+
+Executable command names, subcommands and argument scope tokens are defined in code and remain locale-independent. Locale bundles only provide human-readable prose. Usage messages receive command syntax through placeholders so translating a locale cannot accidentally change executable command tokens.
+
+## Metrics
+
+Optional bStats integration is isolated in `MetricsService`. It can be reconciled after a safe configuration reload and shut down cleanly during plugin disable. Custom charts expose only coarse ClaimShift configuration choices and never claim/player identifiers.

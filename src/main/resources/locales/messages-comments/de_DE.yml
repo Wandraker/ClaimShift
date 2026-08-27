@@ -1,0 +1,8 @@
+config-version:
+- Interne Schemasversion. Nicht manuell ändern.
+theme:
+- HEX-Farben als benannte MiniMessage-Tags.
+prefix:
+- Vollständig anpassbares MiniMessage-Präfix.
+messages:
+- Optionale eigene Nachrichten. Ein Sprachwechsel ersetzt keine eigenen Überschreibungen.

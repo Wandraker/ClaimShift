@@ -1,70 +1,69 @@
 messages:
-  protected: "<prefix> <error>Эта территория сейчас защищена ClaimShift.</error> <muted>Приват: <white><claim></white></muted>"
-  protected-grace: "<prefix> <warning>Состояние привата изменится через <white><remaining></white>.</warning>"
-  reload-success: "<prefix> <success>Конфигурация перезагружена.</success> <muted><duration> мс</muted>"
-  reload-failed: "<prefix> <error>Не удалось перезагрузить конфигурацию.</error> <muted><reason></muted>"
-  sync-success: "<prefix> <success>Синхронизация запрошена.</success> <muted>Система: <white><provider></white></muted>"
-  no-permission: "<prefix> <error>У вас нет прав для этой команды.</error>"
-  player-only: "<prefix> <error>Эту команду может использовать только игрок.</error>"
-  invalid-command: "<prefix> <warning>Неизвестная подкоманда.</warning> <muted>Используйте <white>/claimshift help</white>.</muted>"
-  language-success: "<prefix> <success>Язык обновлён.</success> <muted><scope>: <white><locale></white></muted>"
-  language-failed: "<prefix> <error>Не удалось сменить язык.</error> <muted><reason></muted>"
-  language-usage: "Использование: /claimshift language en_US|ru_RU [config|messages|both]"
-  language-locale-invalid: "Неподдерживаемый язык. Доступно: <white><locales></white>."
-  language-scope-invalid: "Область должна быть config, messages или both."
-  provider-missing: "<prefix> <warning>Поддерживаемая система приватов не найдена.</warning>"
-
-  help-header: "<gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted>команды</muted>"
-  help-line: "<primary><command></primary> <muted>— <description></muted>"
-  help-info-description: "Показать состояние плагина и интеграций."
-  help-inspect-description: "Показать приват и состояние защиты в вашей точке."
-  help-sync-description: "Запросить немедленную синхронизацию системы приватов."
-  help-reload-description: "Безопасно перезагрузить конфигурацию."
-  help-language-description: "Сменить язык конфигов или сообщений без потери своих настроек."
-
-  info-header: "<gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted><version></muted>"
-  info-line: "<primary><key></primary><dark_gray>:</dark_gray> <white><value></white>"
-  info-label-server: "Сервер"
-  info-label-runtime: "Платформа"
-  info-label-java: "Java"
-  info-label-provider: "Система приватов"
-  info-label-provider-mode: "Режим интеграции"
-  info-label-config-locale: "Язык конфигов"
-  info-label-messages-locale: "Язык сообщений"
-  info-label-presence-policy: "Политика присутствия"
-  info-label-offline-delay: "Задержка офлайн-перехода"
-  info-label-managed-regions: "Управляемые регионы"
-  info-label-open-regions: "Открытые регионы"
-  info-label-grace-regions: "Регионы в ожидании"
-  info-label-protected-regions: "Защищённые регионы"
-  info-label-skipped-passthrough: "Пропущено готовых passthrough"
-
-  inspect-header: "<gradient:#7C8CFF:#B287FF><bold>Проверка привата</bold></gradient>"
-  inspect-no-claim: "<prefix> <muted>В этой точке нет поддерживаемого привата.</muted>"
-  inspect-label-name: "Приват"
-  inspect-label-id: "ID"
-  inspect-label-provider: "Система"
-  inspect-label-state: "Состояние"
-  inspect-label-owners: "Эффективные владельцы"
-  inspect-label-online-owners: "Владельцы онлайн"
-  inspect-label-managed: "Динамический доступ"
-  inspect-label-remaining: "Переход через"
-
-  scope-config: "Комментарии конфигурации"
-  scope-messages: "Сообщения"
-  scope-both: "Конфигурация и сообщения"
-  value-yes: "Да"
-  value-no: "Нет"
-  value-none: "Нет"
-  state-open: "ОТКРЫТ"
-  state-grace: "ОЖИДАНИЕ"
-  state-protected: "ЗАЩИЩЁН"
-  state-static: "СТАТИЧНЫЙ / НЕ УПРАВЛЯЕТСЯ"
-  presence-policy-online-open: "Владелец онлайн = ОТКРЫТ"
-  presence-policy-offline-open: "Владелец офлайн = ОТКРЫТ"
-  provider-mode-dynamic-passthrough: "Динамический passthrough"
-  provider-mode-overlay: "Накладная защита"
-  provider-mode-disabled: "Отключён"
-  provider-mode-starting: "Запуск"
-  provider-mode-inactive: "Неактивен"
-  provider-mode-unknown: "Неизвестно"
+  protected: '<prefix> <error>Эта территория сейчас защищена ClaimShift.</error> <muted>Приват: <white><claim></white></muted>'
+  protected-grace: <prefix> <warning>Состояние привата изменится через <white><remaining></white>.</warning>
+  reload-success: <prefix> <success>Конфигурация перезагружена.</success> <muted><duration> мс</muted>
+  reload-failed: <prefix> <error>Не удалось перезагрузить конфигурацию.</error> <muted><reason></muted>
+  sync-success: '<prefix> <success>Синхронизация запрошена.</success> <muted>Система: <white><provider></white></muted>'
+  no-permission: <prefix> <error>У вас нет прав для этой команды.</error>
+  player-only: <prefix> <error>Эту команду может использовать только игрок.</error>
+  invalid-command: <prefix> <warning>Неизвестная подкоманда.</warning> <muted>Используйте <white><command></white>.</muted>
+  language-success: '<prefix> <success>Язык обновлён.</success> <muted><scope>: <white><locale></white></muted>'
+  language-failed: <prefix> <error>Не удалось сменить язык.</error> <muted><reason></muted>
+  language-usage: 'Использование: <white><command></white>. Доступные языки: <white><locales></white>.'
+  language-locale-invalid: 'Неподдерживаемый язык. Доступно: <white><locales></white>.'
+  language-scope-invalid: 'Область должна быть одной из: <white><scopes></white>.'
+  provider-missing: <prefix> <warning>Поддерживаемая система приватов не найдена.</warning>
+  help-header: <gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted>команды</muted>
+  help-line: <primary><command></primary> <muted>— <description></muted>
+  help-info-description: Показать состояние плагина и интеграций.
+  help-inspect-description: Показать приват и состояние защиты в вашей точке.
+  help-sync-description: Запросить немедленную синхронизацию системы приватов.
+  help-reload-description: Безопасно перезагрузить конфигурацию.
+  help-language-description: Сменить язык конфигов или сообщений без потери своих настроек.
+  info-header: <gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted><version></muted>
+  info-line: <primary><key></primary><dark_gray>:</dark_gray> <white><value></white>
+  info-label-server: Сервер
+  info-label-runtime: Платформа
+  info-label-java: Java
+  info-label-provider: Система приватов
+  info-label-provider-mode: Режим интеграции
+  info-label-config-locale: Язык конфигов
+  info-label-messages-locale: Язык сообщений
+  info-label-metrics: Анонимная статистика
+  info-label-presence-policy: Политика присутствия
+  info-label-offline-delay: Задержка офлайн-перехода
+  info-label-managed-regions: Управляемые регионы
+  info-label-open-regions: Открытые регионы
+  info-label-grace-regions: Регионы в ожидании
+  info-label-protected-regions: Защищённые регионы
+  info-label-skipped-passthrough: Пропущено готовых passthrough
+  inspect-header: <gradient:#7C8CFF:#B287FF><bold>Проверка привата</bold></gradient>
+  inspect-no-claim: <prefix> <muted>В этой точке нет поддерживаемого привата.</muted>
+  inspect-label-name: Приват
+  inspect-label-id: ID
+  inspect-label-provider: Система
+  inspect-label-state: Состояние
+  inspect-label-owners: Эффективные владельцы
+  inspect-label-online-owners: Владельцы онлайн
+  inspect-label-managed: Динамический доступ
+  inspect-label-remaining: Переход через
+  scope-config: Комментарии конфигурации
+  scope-messages: Сообщения
+  scope-both: Конфигурация и сообщения
+  value-yes: Да
+  value-no: Нет
+  value-none: Нет
+  value-enabled: Включена
+  value-disabled: Отключена
+  state-open: ОТКРЫТ
+  state-grace: ОЖИДАНИЕ
+  state-protected: ЗАЩИЩЁН
+  state-static: СТАТИЧНЫЙ / НЕ УПРАВЛЯЕТСЯ
+  presence-policy-online-open: Владелец онлайн = ОТКРЫТ
+  presence-policy-offline-open: Владелец офлайн = ОТКРЫТ
+  provider-mode-dynamic-passthrough: Динамический passthrough
+  provider-mode-overlay: Накладная защита
+  provider-mode-disabled: Отключён
+  provider-mode-starting: Запуск
+  provider-mode-inactive: Неактивен
+  provider-mode-unknown: Неизвестно

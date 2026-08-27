@@ -1,0 +1,69 @@
+messages:
+  protected: '<prefix> <error>Este território está protegido pelo ClaimShift no momento.</error> <muted>Claim: <white><claim></white></muted>'
+  protected-grace: <prefix> <warning>O claim mudará de estado em <white><remaining></white>.</warning>
+  reload-success: <prefix> <success>Configuração recarregada.</success> <muted><duration> ms</muted>
+  reload-failed: <prefix> <error>Falha ao recarregar.</error> <muted><reason></muted>
+  sync-success: '<prefix> <success>Sincronização solicitada.</success> <muted>Provedor: <white><provider></white></muted>'
+  no-permission: <prefix> <error>Você não tem permissão para usar este comando.</error>
+  player-only: <prefix> <error>Este comando só pode ser usado por um jogador.</error>
+  invalid-command: <prefix> <warning>Subcomando desconhecido.</warning> <muted>Use <white><command></white>.</muted>
+  language-success: '<prefix> <success>Idioma atualizado.</success> <muted><scope>: <white><locale></white></muted>'
+  language-failed: <prefix> <error>Falha ao alterar o idioma.</error> <muted><reason></muted>
+  language-usage: 'Uso: <white><command></white>. Idiomas disponíveis: <white><locales></white>.'
+  language-locale-invalid: 'Idioma não suportado. Disponíveis: <white><locales></white>.'
+  language-scope-invalid: 'O escopo deve ser um destes: <white><scopes></white>.'
+  provider-missing: <prefix> <warning>Nenhum provedor de claims compatível está ativo.</warning>
+  help-header: <gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted>comandos</muted>
+  help-line: <primary><command></primary> <muted>— <description></muted>
+  help-info-description: Mostrar o estado do plugin e das integrações.
+  help-inspect-description: Inspecionar o claim e o estado de proteção na sua posição.
+  help-sync-description: Solicitar sincronização imediata do provedor de claims.
+  help-reload-description: Recarregar a configuração com segurança.
+  help-language-description: Alterar o idioma da configuração ou das mensagens sem substituir valores personalizados.
+  info-header: <gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted><version></muted>
+  info-line: <primary><key></primary><dark_gray>:</dark_gray> <white><value></white>
+  info-label-server: Servidor
+  info-label-runtime: Plataforma
+  info-label-java: Java
+  info-label-provider: Provedor
+  info-label-provider-mode: Modo do provedor
+  info-label-config-locale: Idioma da configuração
+  info-label-messages-locale: Idioma das mensagens
+  info-label-metrics: Estatísticas anônimas
+  info-label-presence-policy: Política de presença
+  info-label-offline-delay: Atraso da transição offline
+  info-label-managed-regions: Regiões gerenciadas
+  info-label-open-regions: Regiões abertas
+  info-label-grace-regions: Regiões em espera
+  info-label-protected-regions: Regiões protegidas
+  info-label-skipped-passthrough: passthrough existentes ignorados
+  inspect-header: <gradient:#7C8CFF:#B287FF><bold>Inspeção do claim</bold></gradient>
+  inspect-no-claim: <prefix> <muted>Não há um claim compatível na sua posição atual.</muted>
+  inspect-label-name: Claim
+  inspect-label-id: ID
+  inspect-label-provider: Provedor
+  inspect-label-state: Estado
+  inspect-label-owners: Proprietários efetivos
+  inspect-label-online-owners: Proprietários online
+  inspect-label-managed: Acesso dinâmico
+  inspect-label-remaining: Transição em
+  scope-config: Comentários da configuração
+  scope-messages: Mensagens
+  scope-both: Configuração e mensagens
+  value-yes: Sim
+  value-no: Não
+  value-none: Nenhum
+  value-enabled: Ativadas
+  value-disabled: Desativadas
+  state-open: ABERTO
+  state-grace: ESPERA
+  state-protected: PROTEGIDO
+  state-static: ESTÁTICO / NÃO GERENCIADO
+  presence-policy-online-open: Proprietário online = ABERTO
+  presence-policy-offline-open: Proprietário offline = ABERTO
+  provider-mode-dynamic-passthrough: passthrough dinâmico
+  provider-mode-overlay: Overlay
+  provider-mode-disabled: Desativado
+  provider-mode-starting: Iniciando
+  provider-mode-inactive: Inativo
+  provider-mode-unknown: Desconhecido

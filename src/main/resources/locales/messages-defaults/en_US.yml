@@ -1,70 +1,69 @@
 messages:
-  protected: "<prefix> <error>This territory is currently protected by ClaimShift.</error> <muted>Claim: <white><claim></white></muted>"
-  protected-grace: "<prefix> <warning>The claim changes state in <white><remaining></white>.</warning>"
-  reload-success: "<prefix> <success>Reload complete.</success> <muted><duration> ms</muted>"
-  reload-failed: "<prefix> <error>Reload failed.</error> <muted><reason></muted>"
-  sync-success: "<prefix> <success>Synchronization requested.</success> <muted>Provider: <white><provider></white></muted>"
-  no-permission: "<prefix> <error>You do not have permission to use this command.</error>"
-  player-only: "<prefix> <error>This command can only be used by a player.</error>"
-  invalid-command: "<prefix> <warning>Unknown subcommand.</warning> <muted>Use <white>/claimshift help</white>.</muted>"
-  language-success: "<prefix> <success>Locale updated.</success> <muted><scope>: <white><locale></white></muted>"
-  language-failed: "<prefix> <error>Locale change failed.</error> <muted><reason></muted>"
-  language-usage: "Usage: /claimshift language en_US|ru_RU [config|messages|both]"
-  language-locale-invalid: "Unsupported locale. Available: <white><locales></white>."
-  language-scope-invalid: "Scope must be config, messages, or both."
-  provider-missing: "<prefix> <warning>No supported claim provider is active.</warning>"
-
-  help-header: "<gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted>commands</muted>"
-  help-line: "<primary><command></primary> <muted>— <description></muted>"
-  help-info-description: "Show runtime and integration status."
-  help-inspect-description: "Inspect the claim and protection state at your location."
-  help-sync-description: "Request immediate provider synchronization."
-  help-reload-description: "Safely reload configuration."
-  help-language-description: "Change config/message locale without replacing custom values."
-
-  info-header: "<gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted><version></muted>"
-  info-line: "<primary><key></primary><dark_gray>:</dark_gray> <white><value></white>"
-  info-label-server: "Server"
-  info-label-runtime: "Runtime"
-  info-label-java: "Java"
-  info-label-provider: "Provider"
-  info-label-provider-mode: "Provider mode"
-  info-label-config-locale: "Config locale"
-  info-label-messages-locale: "Messages locale"
-  info-label-presence-policy: "Presence policy"
-  info-label-offline-delay: "Offline transition delay"
-  info-label-managed-regions: "Managed regions"
-  info-label-open-regions: "Open regions"
-  info-label-grace-regions: "Grace regions"
-  info-label-protected-regions: "Protected regions"
-  info-label-skipped-passthrough: "Skipped existing passthrough"
-
-  inspect-header: "<gradient:#7C8CFF:#B287FF><bold>Claim inspection</bold></gradient>"
-  inspect-no-claim: "<prefix> <muted>No supported claim exists at your current location.</muted>"
-  inspect-label-name: "Claim"
-  inspect-label-id: "ID"
-  inspect-label-provider: "Provider"
-  inspect-label-state: "State"
-  inspect-label-owners: "Effective owners"
-  inspect-label-online-owners: "Online owners"
-  inspect-label-managed: "Dynamic access"
-  inspect-label-remaining: "Transition in"
-
-  scope-config: "Configuration comments"
-  scope-messages: "Messages"
-  scope-both: "Configuration and messages"
-  value-yes: "Yes"
-  value-no: "No"
-  value-none: "None"
-  state-open: "OPEN"
-  state-grace: "GRACE"
-  state-protected: "PROTECTED"
-  state-static: "STATIC / UNMANAGED"
-  presence-policy-online-open: "Online owners = OPEN"
-  presence-policy-offline-open: "Offline owners = OPEN"
-  provider-mode-dynamic-passthrough: "Dynamic passthrough"
-  provider-mode-overlay: "Overlay"
-  provider-mode-disabled: "Disabled"
-  provider-mode-starting: "Starting"
-  provider-mode-inactive: "Inactive"
-  provider-mode-unknown: "Unknown"
+  protected: '<prefix> <error>This territory is currently protected by ClaimShift.</error> <muted>Claim: <white><claim></white></muted>'
+  protected-grace: <prefix> <warning>The claim changes state in <white><remaining></white>.</warning>
+  reload-success: <prefix> <success>Reload complete.</success> <muted><duration> ms</muted>
+  reload-failed: <prefix> <error>Reload failed.</error> <muted><reason></muted>
+  sync-success: '<prefix> <success>Synchronization requested.</success> <muted>Provider: <white><provider></white></muted>'
+  no-permission: <prefix> <error>You do not have permission to use this command.</error>
+  player-only: <prefix> <error>This command can only be used by a player.</error>
+  invalid-command: <prefix> <warning>Unknown subcommand.</warning> <muted>Use <white><command></white>.</muted>
+  language-success: '<prefix> <success>Locale updated.</success> <muted><scope>: <white><locale></white></muted>'
+  language-failed: <prefix> <error>Locale change failed.</error> <muted><reason></muted>
+  language-usage: 'Usage: <white><command></white>. Available locales: <white><locales></white>.'
+  language-locale-invalid: 'Unsupported locale. Available: <white><locales></white>.'
+  language-scope-invalid: 'Scope must be one of: <white><scopes></white>.'
+  provider-missing: <prefix> <warning>No supported claim provider is active.</warning>
+  help-header: <gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted>commands</muted>
+  help-line: <primary><command></primary> <muted>— <description></muted>
+  help-info-description: Show runtime and integration status.
+  help-inspect-description: Inspect the claim and protection state at your location.
+  help-sync-description: Request immediate provider synchronization.
+  help-reload-description: Safely reload configuration.
+  help-language-description: Change config/message locale without replacing custom values.
+  info-header: <gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted><version></muted>
+  info-line: <primary><key></primary><dark_gray>:</dark_gray> <white><value></white>
+  info-label-server: Server
+  info-label-runtime: Runtime
+  info-label-java: Java
+  info-label-provider: Provider
+  info-label-provider-mode: Provider mode
+  info-label-config-locale: Config locale
+  info-label-messages-locale: Messages locale
+  info-label-metrics: Anonymous metrics
+  info-label-presence-policy: Presence policy
+  info-label-offline-delay: Offline transition delay
+  info-label-managed-regions: Managed regions
+  info-label-open-regions: Open regions
+  info-label-grace-regions: Grace regions
+  info-label-protected-regions: Protected regions
+  info-label-skipped-passthrough: Skipped existing passthrough
+  inspect-header: <gradient:#7C8CFF:#B287FF><bold>Claim inspection</bold></gradient>
+  inspect-no-claim: <prefix> <muted>No supported claim exists at your current location.</muted>
+  inspect-label-name: Claim
+  inspect-label-id: ID
+  inspect-label-provider: Provider
+  inspect-label-state: State
+  inspect-label-owners: Effective owners
+  inspect-label-online-owners: Online owners
+  inspect-label-managed: Dynamic access
+  inspect-label-remaining: Transition in
+  scope-config: Configuration comments
+  scope-messages: Messages
+  scope-both: Configuration and messages
+  value-yes: 'Yes'
+  value-no: 'No'
+  value-none: None
+  value-enabled: Enabled
+  value-disabled: Disabled
+  state-open: OPEN
+  state-grace: GRACE
+  state-protected: PROTECTED
+  state-static: STATIC / UNMANAGED
+  presence-policy-online-open: Online owners = OPEN
+  presence-policy-offline-open: Offline owners = OPEN
+  provider-mode-dynamic-passthrough: Dynamic passthrough
+  provider-mode-overlay: Overlay
+  provider-mode-disabled: Disabled
+  provider-mode-starting: Starting
+  provider-mode-inactive: Inactive
+  provider-mode-unknown: Unknown

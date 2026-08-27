@@ -1,0 +1,69 @@
+messages:
+  protected: '<prefix> <error>Ця територія зараз захищена ClaimShift.</error> <muted>Приват: <white><claim></white></muted>'
+  protected-grace: <prefix> <warning>Стан привату зміниться через <white><remaining></white>.</warning>
+  reload-success: <prefix> <success>Конфігурацію перезавантажено.</success> <muted><duration> мс</muted>
+  reload-failed: <prefix> <error>Не вдалося перезавантажити конфігурацію.</error> <muted><reason></muted>
+  sync-success: '<prefix> <success>Синхронізацію запитано.</success> <muted>Система: <white><provider></white></muted>'
+  no-permission: <prefix> <error>У вас немає прав для цієї команди.</error>
+  player-only: <prefix> <error>Цю команду може використовувати лише гравець.</error>
+  invalid-command: <prefix> <warning>Невідома підкоманда.</warning> <muted>Використайте <white><command></white>.</muted>
+  language-success: '<prefix> <success>Мову оновлено.</success> <muted><scope>: <white><locale></white></muted>'
+  language-failed: <prefix> <error>Не вдалося змінити мову.</error> <muted><reason></muted>
+  language-usage: 'Використання: <white><command></white>. Доступні мови: <white><locales></white>.'
+  language-locale-invalid: 'Непідтримувана мова. Доступно: <white><locales></white>.'
+  language-scope-invalid: 'Область має бути однією з: <white><scopes></white>.'
+  provider-missing: <prefix> <warning>Підтримувану систему приватів не знайдено.</warning>
+  help-header: <gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted>команди</muted>
+  help-line: <primary><command></primary> <muted>— <description></muted>
+  help-info-description: Показати стан плагіна та інтеграцій.
+  help-inspect-description: Показати приват і стан захисту у вашій точці.
+  help-sync-description: Запитати негайну синхронізацію системи приватів.
+  help-reload-description: Безпечно перезавантажити конфігурацію.
+  help-language-description: Змінити мову конфігів або повідомлень без втрати власних налаштувань.
+  info-header: <gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted><version></muted>
+  info-line: <primary><key></primary><dark_gray>:</dark_gray> <white><value></white>
+  info-label-server: Сервер
+  info-label-runtime: Платформа
+  info-label-java: Java
+  info-label-provider: Система приватів
+  info-label-provider-mode: Режим інтеграції
+  info-label-config-locale: Мова конфігів
+  info-label-messages-locale: Мова повідомлень
+  info-label-metrics: Анонімна статистика
+  info-label-presence-policy: Політика присутності
+  info-label-offline-delay: Затримка офлайн-переходу
+  info-label-managed-regions: Керовані регіони
+  info-label-open-regions: Відкриті регіони
+  info-label-grace-regions: Регіони в очікуванні
+  info-label-protected-regions: Захищені регіони
+  info-label-skipped-passthrough: Пропущено наявних passthrough
+  inspect-header: <gradient:#7C8CFF:#B287FF><bold>Перевірка привату</bold></gradient>
+  inspect-no-claim: <prefix> <muted>У цій точці немає підтримуваного привату.</muted>
+  inspect-label-name: Приват
+  inspect-label-id: ID
+  inspect-label-provider: Система
+  inspect-label-state: Стан
+  inspect-label-owners: Ефективні власники
+  inspect-label-online-owners: Власники онлайн
+  inspect-label-managed: Динамічний доступ
+  inspect-label-remaining: Перехід через
+  scope-config: Коментарі конфігурації
+  scope-messages: Повідомлення
+  scope-both: Конфігурація та повідомлення
+  value-yes: Так
+  value-no: Ні
+  value-none: Немає
+  value-enabled: Увімкнена
+  value-disabled: Вимкнена
+  state-open: ВІДКРИТИЙ
+  state-grace: ОЧІКУВАННЯ
+  state-protected: ЗАХИЩЕНИЙ
+  state-static: СТАТИЧНИЙ / НЕ КЕРУЄТЬСЯ
+  presence-policy-online-open: Власник онлайн = ВІДКРИТИЙ
+  presence-policy-offline-open: Власник офлайн = ВІДКРИТИЙ
+  provider-mode-dynamic-passthrough: Динамічний passthrough
+  provider-mode-overlay: Накладний захист
+  provider-mode-disabled: Вимкнений
+  provider-mode-starting: Запуск
+  provider-mode-inactive: Неактивний
+  provider-mode-unknown: Невідомо

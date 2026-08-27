@@ -1,33 +1,38 @@
 config-version:
-  - "Internal configuration schema version. Do not change it manually."
+- Internal configuration schema version. Do not change it manually.
 language:
   config:
-    - "Locale used for comments in all ClaimShift YAML configuration files."
+  - Locale used for comments in all ClaimShift YAML configuration files.
   messages:
-    - "Locale used for built-in player/admin messages. Custom message overrides are preserved."
+  - Locale used for built-in player/admin messages. Custom message overrides are preserved.
 integration:
   provider:
-    - "Claim provider: auto, worldguard, or lands. In 1.1.1, auto selects only a full dynamic provider (WorldGuard); Lands overlay must be selected explicitly."
+  - 'Claim provider: auto, worldguard, or lands. auto selects a full dynamic provider; Lands overlay must be selected explicitly.'
   worldguard:
     mode:
-      - "dynamic-passthrough creates real raid windows: OPEN/GRACE regions get passthrough ALLOW."
-      - "When PROTECTED, ClaimShift restores the exact passthrough value that existed before it took control."
-      - "overlay never changes WorldGuard region flags and only adds ClaimShift denials."
+    - 'dynamic-passthrough creates real raid windows: OPEN/GRACE regions get passthrough ALLOW.'
+    - When PROTECTED, ClaimShift restores the exact passthrough value that existed before it took control.
+    - overlay never changes WorldGuard region flags and only adds ClaimShift denials.
     manage-all-owned-regions:
-      - "Safe default is false: fresh installations do not dynamically change existing WorldGuard regions until an administrator opts them in."
-      - "Set true to manage every physical non-global WorldGuard region with at least one effective player owner; then mark spawn/shop/event regions static with claimshift-dynamic deny or exclusions."
-      - "Ownerless administrative regions are always ignored. Inherited player owners from parent regions are included; legacy names are resolved without blocking web lookups."
+    - 'Safe default is false: existing WorldGuard regions are not dynamically changed until an administrator opts them in.'
+    - Set true to manage every physical non-global region with an effective player owner; keep spawn/shop/event regions static with claimshift-dynamic deny or exclusions.
+    - Ownerless administrative regions are ignored. Inherited player owners from parent regions are included.
     manage-existing-passthrough-regions:
-      - "If false, regions that already had passthrough ALLOW before ClaimShift are left alone."
+    - If false, regions that already had passthrough ALLOW before ClaimShift are left alone.
     included-regions:
-      - "Used when manage-all-owned-regions is false. Supports region, world:region, * and ? wildcards."
+    - Used when manage-all-owned-regions is false. Supports region, world:region, * and ? wildcards.
     excluded-regions:
-      - "Regions ClaimShift must never manage. Supports region, world:region, * and ? wildcards."
-      - "Useful for broad admin rules such as spawn*, admin_*, world:event_*. Per-region WorldGuard flag claimshift-dynamic deny takes precedence and keeps that region fully static."
+    - Regions ClaimShift must never manage. Supports region, world:region, * and ? wildcards.
+    - Per-region claimshift-dynamic deny takes precedence and keeps the region static.
     reconcile-interval:
-      - "Safety reconciliation interval for dynamic WorldGuard state. Join/quit changes also trigger immediate sync."
+    - Safety reconciliation interval for dynamic WorldGuard state. Join/quit changes also trigger immediate sync.
   lands:
     mode:
-      - "Lands integration mode. ClaimShift 1.1.1 supports overlay only."
+    - Lands integration currently supports overlay mode only.
+metrics:
+  enabled:
+  - Enable anonymous bStats metrics for ClaimShift.
+  - Standard bStats statistics plus ClaimShift presence-policy, provider, WorldGuard mode and message-locale charts are submitted.
+  - The server-wide bStats opt-out in plugins/bStats/config.yml is always respected.
 debug:
-  - "Enable additional ClaimShift diagnostics in the server console."
+- Enable additional ClaimShift diagnostics in the server console.

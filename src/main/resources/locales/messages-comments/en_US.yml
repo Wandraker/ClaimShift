@@ -1,9 +1,9 @@
 config-version:
-  - "Internal schema version. Do not change this value manually."
+- Internal schema version. Do not change this value manually.
 theme:
-  - "HEX colors exposed as named MiniMessage tags such as <primary> and <error>."
+- HEX colors exposed as named MiniMessage tags such as <primary> and <error>.
 prefix:
-  - "Fully customizable MiniMessage prefix."
+- Fully customizable MiniMessage prefix.
 messages:
-  - "Optional custom message overrides. Missing keys always come from language.messages."
-  - "Changing locale never replaces a custom override."
+- Optional custom message overrides. Missing keys always come from language.messages.
+- Changing locale never replaces a custom override.

@@ -84,7 +84,7 @@ public final class ProviderManager {
             plugin.getLogger().warning("No supported claim provider is active. Protection checks are idle.");
         } else {
             if (selected.id().equals("lands")) {
-                plugin.getLogger().warning("Lands is running in overlay-only mode. ClaimShift 1.1.1 will not rewrite Lands roles to create an OPEN raid window; select Lands explicitly only when your Lands permissions already provide the raid-access behavior expected by the selected presence policy.");
+                plugin.getLogger().warning("Lands is running in overlay-only mode. ClaimShift does not rewrite Lands roles to create an OPEN raid window; select Lands explicitly only when your Lands permissions already provide the raid-access behavior expected by the selected presence policy.");
             }
             selected.requestReconcile();
         }

@@ -1,9 +1,10 @@
 plugins {
     java
+    id("com.gradleup.shadow") version "9.6.1"
 }
 
 group = "dev.onelsey"
-version = "1.1.1"
+version = "1.2.0"
 
 repositories {
     mavenCentral()
@@ -22,6 +23,8 @@ repositories {
 }
 
 dependencies {
+    implementation("org.bstats:bstats-bukkit:3.2.1")
+
     compileOnly("io.papermc.paper:paper-api:26.2.build.116-stable")
 
     // EngineHub modules are API-only here. Their transitive Mojang Guava/Gson
@@ -61,10 +64,16 @@ tasks.test {
 }
 
 tasks.jar {
+    enabled = false
+}
+
+tasks.shadowJar {
     archiveBaseName.set("ClaimShift")
     archiveVersion.set(project.version.toString())
+    archiveClassifier.set("")
     isPreserveFileTimestamps = false
     isReproducibleFileOrder = true
+    relocate("org.bstats", "dev.onelsey.claimshift.lib.bstats")
     from(rootProject.file("LICENSE")) {
         into("META-INF")
         rename { "ClaimShift-LICENSE.txt" }
@@ -76,6 +85,10 @@ tasks.jar {
             "Implementation-Vendor" to "Onelsey"
         )
     }
+}
+
+tasks.assemble {
+    dependsOn(tasks.shadowJar)
 }
 
 tasks.named<Jar>("sourcesJar") {

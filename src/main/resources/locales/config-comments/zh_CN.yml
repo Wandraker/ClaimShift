@@ -1,0 +1,31 @@
+config-version:
+- 内部配置结构版本，请勿手动修改。
+language:
+  config:
+  - ClaimShift YAML 配置文件注释所使用的语言。
+  messages:
+  - 内置玩家/管理员消息的语言。自定义消息不会被覆盖。
+integration:
+  provider:
+  - 领地系统：auto、worldguard 或 lands。auto 会选择完整的动态系统；Lands overlay 需要显式选择。
+  worldguard:
+    mode:
+    - WorldGuard 模式。dynamic-passthrough 会创建真实的可突袭窗口；overlay 只添加 ClaimShift 保护。
+    manage-all-owned-regions:
+    - 为 false 时，不会自动动态管理现有 WorldGuard 区域。
+    manage-existing-passthrough-regions:
+    - 为 false 时，ClaimShift 不会修改原本已有 passthrough ALLOW 的区域。
+    included-regions:
+    - 要纳入管理的区域。支持 region、world:region 以及 * / ? 通配符。
+    excluded-regions:
+    - ClaimShift 永远不应管理的区域。claimshift-dynamic deny 优先级更高。
+    reconcile-interval:
+    - WorldGuard 动态状态的安全同步间隔。玩家加入/退出也会立即触发同步。
+  lands:
+    mode:
+    - Lands 当前仅支持 overlay。
+metrics:
+  enabled:
+  - 启用匿名 bStats 统计。始终遵守服务器全局 bStats 退出设置。
+debug:
+- 在服务器控制台启用更多 ClaimShift 诊断信息。

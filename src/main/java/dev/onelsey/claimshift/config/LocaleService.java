@@ -16,7 +16,7 @@ public final class LocaleService {
     }
 
     public List<String> supportedLocales() {
-        return ConfigurationService.SUPPORTED_LOCALES;
+        return LocaleCatalog.SUPPORTED_LOCALES;
     }
 
     public ReloadResult switchLocale(String locale, Scope scope) {

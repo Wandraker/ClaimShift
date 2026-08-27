@@ -161,7 +161,21 @@ ClaimShift includes built-in localization support.
 
 Configuration comments and player/admin messages can use different locales. Changing the selected language does not reset unrelated configured values.
 
+Bundled locales:
+
+- `en_US` — English
+- `ru_RU` — Russian
+- `de_DE` — German
+- `es_ES` — Spanish
+- `fr_FR` — French
+- `pl_PL` — Polish
+- `pt_BR` — Brazilian Portuguese
+- `uk_UA` — Ukrainian
+- `zh_CN` — Simplified Chinese
+
 `messages.yml` stores custom overrides, while untouched stock messages come from the selected bundled locale.
+
+Executable command names, subcommands and scope tokens are intentionally **not translated**. Localization only changes human-readable descriptions, labels, comments and messages, so documented commands remain stable in every locale.
 
 ### MiniMessage
 
@@ -213,6 +227,29 @@ Useful commands for testing and administration:
 - `claimshift.bypass`
 
 `claimshift.admin` intentionally does **not** grant `claimshift.bypass`, allowing administrators to test ClaimShift protection without silently bypassing it.
+
+
+## Anonymous metrics
+
+ClaimShift can send anonymous usage statistics through [bStats](https://bstats.org/).
+
+The integration reports the normal bStats platform/plugin statistics plus a small set of ClaimShift configuration charts:
+
+- presence policy
+- active claim provider
+- WorldGuard integration mode
+- selected message locale
+
+ClaimShift does not add usernames, player UUIDs, region names or server addresses to its custom charts.
+
+Plugin-side metrics can be disabled in `config.yml`:
+
+```yaml
+metrics:
+  enabled: false
+```
+
+The server-wide bStats opt-out in `plugins/bStats/config.yml` is also always respected.
 
 ## Safe reload
 

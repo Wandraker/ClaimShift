@@ -1,0 +1,69 @@
+messages:
+  protected: '<prefix> <error>Ten teren jest obecnie chroniony przez ClaimShift.</error> <muted>Claim: <white><claim></white></muted>'
+  protected-grace: <prefix> <warning>Stan claimu zmieni się za <white><remaining></white>.</warning>
+  reload-success: <prefix> <success>Konfiguracja została przeładowana.</success> <muted><duration> ms</muted>
+  reload-failed: <prefix> <error>Nie udało się przeładować konfiguracji.</error> <muted><reason></muted>
+  sync-success: '<prefix> <success>Zażądano synchronizacji.</success> <muted>Provider: <white><provider></white></muted>'
+  no-permission: <prefix> <error>Nie masz uprawnień do użycia tej komendy.</error>
+  player-only: <prefix> <error>Tej komendy może użyć tylko gracz.</error>
+  invalid-command: <prefix> <warning>Nieznana podkomenda.</warning> <muted>Użyj <white><command></white>.</muted>
+  language-success: '<prefix> <success>Język został zmieniony.</success> <muted><scope>: <white><locale></white></muted>'
+  language-failed: <prefix> <error>Nie udało się zmienić języka.</error> <muted><reason></muted>
+  language-usage: 'Użycie: <white><command></white>. Dostępne języki: <white><locales></white>.'
+  language-locale-invalid: 'Nieobsługiwany język. Dostępne: <white><locales></white>.'
+  language-scope-invalid: 'Zakres musi być jednym z: <white><scopes></white>.'
+  provider-missing: <prefix> <warning>Brak aktywnego obsługiwanego providera claimów.</warning>
+  help-header: <gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted>komendy</muted>
+  help-line: <primary><command></primary> <muted>— <description></muted>
+  help-info-description: Pokaż stan pluginu i integracji.
+  help-inspect-description: Sprawdź claim i stan ochrony w bieżącej lokalizacji.
+  help-sync-description: Zażądaj natychmiastowej synchronizacji providera claimów.
+  help-reload-description: Bezpiecznie przeładuj konfigurację.
+  help-language-description: Zmień język konfiguracji lub wiadomości bez nadpisywania własnych wartości.
+  info-header: <gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted><version></muted>
+  info-line: <primary><key></primary><dark_gray>:</dark_gray> <white><value></white>
+  info-label-server: Serwer
+  info-label-runtime: Platforma
+  info-label-java: Java
+  info-label-provider: Provider
+  info-label-provider-mode: Tryb providera
+  info-label-config-locale: Język konfiguracji
+  info-label-messages-locale: Język wiadomości
+  info-label-metrics: Anonimowe statystyki
+  info-label-presence-policy: Polityka obecności
+  info-label-offline-delay: Opóźnienie przejścia offline
+  info-label-managed-regions: Zarządzane regiony
+  info-label-open-regions: Otwarte regiony
+  info-label-grace-regions: Regiony w okresie przejściowym
+  info-label-protected-regions: Chronione regiony
+  info-label-skipped-passthrough: Pominięte istniejące passthrough
+  inspect-header: <gradient:#7C8CFF:#B287FF><bold>Inspekcja claimu</bold></gradient>
+  inspect-no-claim: <prefix> <muted>W tej lokalizacji nie ma obsługiwanego claimu.</muted>
+  inspect-label-name: Claim
+  inspect-label-id: ID
+  inspect-label-provider: Provider
+  inspect-label-state: Stan
+  inspect-label-owners: Efektywni właściciele
+  inspect-label-online-owners: Właściciele online
+  inspect-label-managed: Dostęp dynamiczny
+  inspect-label-remaining: Przejście za
+  scope-config: Komentarze konfiguracji
+  scope-messages: Wiadomości
+  scope-both: Konfiguracja i wiadomości
+  value-yes: Tak
+  value-no: Nie
+  value-none: Brak
+  value-enabled: Włączone
+  value-disabled: Wyłączone
+  state-open: OTWARTY
+  state-grace: OCZEKIWANIE
+  state-protected: CHRONIONY
+  state-static: STATYCZNY / NIEZARZĄDZANY
+  presence-policy-online-open: Właściciel online = OTWARTY
+  presence-policy-offline-open: Właściciel offline = OTWARTY
+  provider-mode-dynamic-passthrough: Dynamiczny passthrough
+  provider-mode-overlay: Overlay
+  provider-mode-disabled: Wyłączony
+  provider-mode-starting: Uruchamianie
+  provider-mode-inactive: Nieaktywny
+  provider-mode-unknown: Nieznany

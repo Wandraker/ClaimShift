@@ -1,0 +1,45 @@
+config-version:
+- Wewnętrzna wersja schematu zasad. Nie zmieniaj jej ręcznie.
+protection:
+  enabled:
+  - Główny przełącznik ochrony ClaimShift i dynamicznego dostępu WorldGuard.
+  presence-policy:
+  - 'Określa, który stan obecności pozwala na rajd: online-open lub offline-open.'
+  offline-delay:
+  - 'Opóźnienie po wyjściu ostatniego efektywnego właściciela. Przykłady: 30s, 1m, 10m, 1h.'
+  protect-unknown-offline-owners:
+  - Przy true claimy z nieznanym czasem wyjścia po restarcie pozostają bezpiecznie chronione.
+  trusted-players-bypass:
+  - Pozwala właścicielom i zaufanym/member graczom korzystać z własnego terenu.
+  actions:
+    block-break:
+    - Niszczenie bloków przez graczy.
+    block-place:
+    - Stawianie bloków przez graczy.
+    containers:
+    - Otwieranie i modyfikowanie ekwipunków.
+    container-automation:
+    - Automatyzacja kontenerów przez granice ochrony.
+    interactions:
+    - Interakcje z blokami bez ekwipunku.
+    entity-damage:
+    - Obrażenia zadawane encjom niebędącym graczami.
+    entity-interact:
+    - Interakcje z encjami.
+    entity-grief:
+    - Zmiany bloków powodowane przez encje.
+    hanging:
+    - Obrazy i ramki.
+    buckets:
+    - Akcje z wiadrami.
+    explosions:
+    - Niszczenie bloków przez eksplozje.
+    pistons:
+    - Ruch tłoków przez chronione granice.
+    fluids:
+    - Przepływ wody/lawy przez chronione granice.
+    fire:
+    - Ogień i rozprzestrzenianie przez chronione granice.
+notifications:
+  cooldown:
+  - Minimalny odstęp między powtarzanymi wiadomościami o blokadzie dla tego samego gracza.

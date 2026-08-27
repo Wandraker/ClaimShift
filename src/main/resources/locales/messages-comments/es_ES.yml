@@ -1,0 +1,8 @@
+config-version:
+- Versión interna del esquema. No la cambies manualmente.
+theme:
+- Colores HEX disponibles como etiquetas MiniMessage con nombre.
+prefix:
+- Prefijo MiniMessage totalmente personalizable.
+messages:
+- Mensajes personalizados opcionales. Cambiar el idioma no reemplaza tus propios mensajes.

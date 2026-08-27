@@ -1,0 +1,69 @@
+messages:
+  protected: '<prefix> <error>Este territorio está protegido actualmente por ClaimShift.</error> <muted>Claim: <white><claim></white></muted>'
+  protected-grace: <prefix> <warning>El claim cambiará de estado en <white><remaining></white>.</warning>
+  reload-success: <prefix> <success>Configuración recargada.</success> <muted><duration> ms</muted>
+  reload-failed: <prefix> <error>Error al recargar.</error> <muted><reason></muted>
+  sync-success: '<prefix> <success>Sincronización solicitada.</success> <muted>Proveedor: <white><provider></white></muted>'
+  no-permission: <prefix> <error>No tienes permiso para usar este comando.</error>
+  player-only: <prefix> <error>Este comando solo puede usarlo un jugador.</error>
+  invalid-command: <prefix> <warning>Subcomando desconocido.</warning> <muted>Usa <white><command></white>.</muted>
+  language-success: '<prefix> <success>Idioma actualizado.</success> <muted><scope>: <white><locale></white></muted>'
+  language-failed: <prefix> <error>No se pudo cambiar el idioma.</error> <muted><reason></muted>
+  language-usage: 'Uso: <white><command></white>. Idiomas disponibles: <white><locales></white>.'
+  language-locale-invalid: 'Idioma no compatible. Disponibles: <white><locales></white>.'
+  language-scope-invalid: 'El ámbito debe ser uno de: <white><scopes></white>.'
+  provider-missing: <prefix> <warning>No hay ningún proveedor de claims compatible activo.</warning>
+  help-header: <gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted>comandos</muted>
+  help-line: <primary><command></primary> <muted>— <description></muted>
+  help-info-description: Mostrar el estado del plugin y de las integraciones.
+  help-inspect-description: Inspeccionar el claim y su protección en tu posición.
+  help-sync-description: Solicitar una sincronización inmediata del proveedor de claims.
+  help-reload-description: Recargar la configuración de forma segura.
+  help-language-description: Cambiar el idioma de configuración o mensajes sin reemplazar valores personalizados.
+  info-header: <gradient:#7C8CFF:#B287FF><bold>ClaimShift</bold></gradient> <muted><version></muted>
+  info-line: <primary><key></primary><dark_gray>:</dark_gray> <white><value></white>
+  info-label-server: Servidor
+  info-label-runtime: Plataforma
+  info-label-java: Java
+  info-label-provider: Proveedor
+  info-label-provider-mode: Modo del proveedor
+  info-label-config-locale: Idioma de configuración
+  info-label-messages-locale: Idioma de mensajes
+  info-label-metrics: Estadísticas anónimas
+  info-label-presence-policy: Política de presencia
+  info-label-offline-delay: Retraso de transición sin conexión
+  info-label-managed-regions: Regiones gestionadas
+  info-label-open-regions: Regiones abiertas
+  info-label-grace-regions: Regiones en espera
+  info-label-protected-regions: Regiones protegidas
+  info-label-skipped-passthrough: passthrough existentes omitidos
+  inspect-header: <gradient:#7C8CFF:#B287FF><bold>Inspección del claim</bold></gradient>
+  inspect-no-claim: <prefix> <muted>No hay ningún claim compatible en tu posición actual.</muted>
+  inspect-label-name: Claim
+  inspect-label-id: ID
+  inspect-label-provider: Proveedor
+  inspect-label-state: Estado
+  inspect-label-owners: Propietarios efectivos
+  inspect-label-online-owners: Propietarios conectados
+  inspect-label-managed: Acceso dinámico
+  inspect-label-remaining: Transición en
+  scope-config: Comentarios de configuración
+  scope-messages: Mensajes
+  scope-both: Configuración y mensajes
+  value-yes: Sí
+  value-no: 'No'
+  value-none: Ninguno
+  value-enabled: Activadas
+  value-disabled: Desactivadas
+  state-open: ABIERTO
+  state-grace: ESPERA
+  state-protected: PROTEGIDO
+  state-static: ESTÁTICO / NO GESTIONADO
+  presence-policy-online-open: Propietario conectado = ABIERTO
+  presence-policy-offline-open: Propietario desconectado = ABIERTO
+  provider-mode-dynamic-passthrough: passthrough dinámico
+  provider-mode-overlay: Overlay
+  provider-mode-disabled: Desactivado
+  provider-mode-starting: Iniciando
+  provider-mode-inactive: Inactivo
+  provider-mode-unknown: Desconocido

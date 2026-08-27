@@ -1,0 +1,8 @@
+config-version:
+- 内部结构版本，请勿手动修改。
+theme:
+- 可作为命名 MiniMessage 标签使用的 HEX 颜色。
+prefix:
+- 完全可自定义的 MiniMessage 前缀。
+messages:
+- 可选的自定义消息。切换语言不会覆盖自定义内容。
