@@ -7,6 +7,7 @@ public record PluginSettings(
         WorldGuardSettings worldGuard,
         String landsMode,
         boolean metricsEnabled,
+        DiagnosticsSettings diagnostics,
         boolean debug
 ) {
 }

@@ -6,13 +6,17 @@ import dev.onelsey.claimshift.config.LocaleService;
 import dev.onelsey.claimshift.config.ReloadResult;
 import dev.onelsey.claimshift.integration.ProviderManager;
 import dev.onelsey.claimshift.integration.WorldGuardFlags;
+import dev.onelsey.claimshift.listener.ActivityListener;
+import dev.onelsey.claimshift.listener.DiagnosticsNoticeListener;
 import dev.onelsey.claimshift.listener.PresenceListener;
 import dev.onelsey.claimshift.listener.ProtectionListener;
 import dev.onelsey.claimshift.listener.WorldLifecycleListener;
+import dev.onelsey.claimshift.listener.WorldGuardMutationListener;
 import dev.onelsey.claimshift.message.MessageService;
 import dev.onelsey.claimshift.metrics.MetricsService;
 import dev.onelsey.claimshift.protection.ClaimStateService;
 import dev.onelsey.claimshift.protection.PresenceService;
+import dev.onelsey.claimshift.protection.RaidSessionService;
 import dev.onelsey.claimshift.protection.ProtectionService;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -32,7 +36,7 @@ public final class ClaimShiftPlugin extends JavaPlugin {
         try {
             WorldGuardFlags.register(getLogger());
         } catch (LinkageError | RuntimeException exception) {
-            getLogger().warning("Could not register WorldGuard flag 'claimshift-dynamic': " + rootMessage(exception));
+            getLogger().warning("Could not register ClaimShift WorldGuard flags: " + rootMessage(exception));
         }
     }
 
@@ -49,18 +53,22 @@ public final class ClaimShiftPlugin extends JavaPlugin {
             }
 
             LocaleService locales = new LocaleService(configuration);
-            PresenceService presence = new PresenceService();
-            presence.initialize(getServer());
-            ClaimStateService states = new ClaimStateService(configuration, presence);
+            MessageService messages = new MessageService(configuration);
+            PresenceService presence = new PresenceService(this);
+            presence.initialize(getServer(), configuration.ruleSettings().presence());
+            RaidSessionService raids = new RaidSessionService(this, configuration, messages);
+            ClaimStateService states = new ClaimStateService(configuration, presence, raids);
             providers = new ProviderManager(this, configuration, states);
             metrics = new MetricsService(this, configuration, providers);
             metrics.reconcile();
-            ProtectionService protection = new ProtectionService(configuration, providers, states);
-            MessageService messages = new MessageService(configuration);
+            ProtectionService protection = new ProtectionService(configuration, providers, states, raids);
 
             getServer().getPluginManager().registerEvents(new PresenceListener(presence, providers, configuration), this);
+            getServer().getPluginManager().registerEvents(new ActivityListener(presence, providers, configuration), this);
+            getServer().getPluginManager().registerEvents(new DiagnosticsNoticeListener(configuration, messages), this);
             getServer().getPluginManager().registerEvents(new ProtectionListener(configuration, protection, messages), this);
             getServer().getPluginManager().registerEvents(new WorldLifecycleListener(providers), this);
+            getServer().getPluginManager().registerEvents(new WorldGuardMutationListener(providers), this);
 
             ClaimShiftCommand commandHandler = new ClaimShiftCommand(
                     this,
@@ -68,6 +76,8 @@ public final class ClaimShiftPlugin extends JavaPlugin {
                     locales,
                     providers,
                     protection,
+                    presence,
+                    raids,
                     metrics,
                     messages
             );
@@ -79,6 +89,9 @@ public final class ClaimShiftPlugin extends JavaPlugin {
             command.setTabCompleter(commandHandler);
 
             providers.start();
+            if (configuration.pluginSettings().diagnostics().dryRun()) {
+                getLogger().warning("DRY RUN is enabled: ClaimShift will preview decisions without changing WorldGuard state or denying actions. Use /claimshift dryrun off when ready.");
+            }
             getLogger().info("ClaimShift " + getPluginMeta().getVersion() + " enabled on " + platformName() + ".");
             getLogger().info("Minecraft " + getServer().getMinecraftVersion() + " / Java " + System.getProperty("java.version"));
         } catch (Exception exception) {

@@ -1,5 +1,97 @@
 # Changelog
 
+## 1.3.1
+
+### Build and tests
+
+- Fixed the WorldGuard region lifecycle regression test loading Bukkit/Paper classes on the unit-test runtime classpath.
+- Moved first-observation lifecycle classification into a pure Java helper so the policy can be tested without a running server API.
+
+WorldGuard region lifecycle and first-run diagnostics usability update.
+
+### Region lifecycle
+
+- Added `integration.worldguard.auto-manage-new-regions`, enabled by default.
+- WorldGuard regions already present when ClaimShift first observes a loaded world are recorded as legacy/static and keep their normal WorldGuard behavior.
+- Eligible player-owned regions first created while ClaimShift is actively running are automatically classified as dynamic, without requiring `claimshift-dynamic allow`.
+- Common WorldGuard `/rg` / `/region` mutation commands trigger a near-immediate reconciliation, while periodic reconciliation remains the fallback for regions created through APIs or other plugins.
+- Automatic/legacy classification persists across restarts in internal `region-registry.yml`.
+- Regions created while a world was unavailable are safely treated as pre-existing/static when that world is loaded again.
+- Deleted region classifications are pruned while their world is loaded, so recreating a region later can be treated as a new region.
+- `manage-all-owned-regions`, include selectors, exclude selectors, and explicit `claimshift-dynamic allow/deny` remain available as administrator overrides.
+- `/claimshift inspect` now reports the management source, making it clear whether a region is automatic, legacy/static, manually enabled/disabled, included, excluded, or controlled by manage-all.
+- Inspection now also explains when an otherwise selected region is intentionally left unmanaged because it already had administrator-owned `passthrough: ALLOW`.
+
+### Dry-run usability
+
+- Reworded first-install dry-run notices to explain that WorldGuard continues enforcing its normal protection while ClaimShift is preview-only.
+- The operator notice now tells administrators to inspect a player claim before disabling dry-run.
+- Executable `/claimshift inspect` syntax remains code-owned and is inserted through a placeholder instead of being embedded in localized message files.
+
+### Configuration and documentation
+
+- Config schema moved to 3.
+- Added localized comments for automatic new-region management across every bundled configuration locale.
+- Updated README, compatibility notes, architecture documentation, manual testing, and the public EN/RU Wiki for the old-static/new-dynamic region lifecycle.
+
+## 1.3.0
+
+Smart Presence, anti-abuse, raid lifecycle and first-install diagnostics update.
+
+### Smart Presence
+
+- Added active-owner presence tracking so a connected account does not have to count as present forever.
+- Smart Presence is enabled by default with a configurable idle timeout.
+- Added meaningful movement anchors so tiny position jitter and camera movement do not continuously refresh presence.
+- Added conservative periodic keep-alive detection for repeated low-frequency actions with nearly identical timing.
+- Periodic detection does not punish or flag players; matching keep-alive activity simply stops refreshing active presence.
+- Added coarse activity signals for movement, blocks, interactions, inventory use, root commands, chat activity and combat without storing chat text, command arguments or inventory contents.
+- Added optional soft AFK bridges for CMI and EssentialsX. External AFK APIs are sampled on the player's entity scheduler and cached for Folia-safe reconciliation.
+- Added optional anti-relog qualification and maximum continuous-presence controls; both remain disabled by default.
+- `/claimshift inspect` now separates connected owners from active owners. Russian UI wording uses «Активные владельцы» rather than a literal technical translation of effective owners.
+
+### Raid sessions
+
+- Added optional runtime raid sessions, disabled by default.
+- Qualifying hostile activity can lock an already-OPEN claim open until the inactivity timeout or hard maximum duration expires.
+- Added configurable trigger action types and optional inactivity-window extension on continued raid activity.
+- Added owner notifications for raid-session start/end.
+- Running sessions re-check the claim's current raid enable policy instead of remaining stale after a global/per-region policy change.
+- Enabling dry-run terminates active raid sessions and prevents new sessions from starting.
+- Raid timing validation now remains strict even when the global raid switch is disabled because a WorldGuard region may enable raids explicitly.
+- Raid sessions are runtime-only and are not resurrected after a server restart.
+
+### Transition model and WorldGuard overrides
+
+- Replaced the one-way offline transition timer with independent active-owner and inactive-owner transition delays.
+- Fresh installations now default to `offline-open`, with `owner-inactive: 1h` before a claim becomes OPEN and `owner-active: 5m` before protection returns to an already OPEN claim.
+- Either transition delay accepts `0` or `0s` for an immediate transition.
+- The active-owner recovery delay is only applied when the claim is actually in the opposite dynamic state, so joining after a restart or returning before the claim ever opened does not create a new vulnerability window.
+- Existing installations preserve their selected presence policy and previous offline delay. The old delay migrates to `owner-inactive`, while the newly introduced reverse transition migrates as immediate (`0s`) to avoid silently changing live behavior.
+- Added `claimshift-policy` per-region presence-policy override.
+- Added `claimshift-active-delay` and `claimshift-inactive-delay` per-region transition overrides.
+- Kept the older `claimshift-delay` WorldGuard flag as a compatibility alias for the inactive-owner delay.
+- Runtime OPEN/PROTECTED memory is now tracked independently from crash-recovery metadata, so reverse transition delays also work correctly for regions whose original WorldGuard `passthrough` was already `ALLOW`.
+- Added `claimshift-raids` per-region raid-session allow/deny override.
+- Existing `claimshift-dynamic` opt-in/static override behavior is unchanged.
+
+### First-install diagnostics
+
+- Added `diagnostics.dry-run`, `diagnostics.log-transitions`, and `diagnostics.operator-notice`.
+- Brand-new installations start in dry-run so administrators can preview ClaimShift decisions without changing WorldGuard state or denying actions.
+- Existing installations migrate with dry-run explicitly disabled, so upgrading never silently changes an enforced server into preview-only mode.
+- Added `/claimshift dryrun <on|off|status>` and the `claimshift.dryrun` permission.
+- Operators receive a title/chat reminder while dry-run is enabled, including the stable command used to disable it.
+- Dry-run can log changed state/passthrough previews while suppressing identical repeated reconciliation output.
+
+### Configuration, localization and diagnostics
+
+- Rules schema moved to 4; config schema remains 2.
+- Expanded localized comments for all Smart Presence, anti-relog, maximum-presence and raid settings across every bundled locale.
+- Added Smart Presence, pattern detection, external AFK source, dry-run and raid-session information to `/claimshift info` / `/claimshift inspect`.
+- Expanded bStats configuration charts with coarse Smart Presence, periodic-pattern and global raid-session switches; no player/claim identifiers are submitted by ClaimShift custom charts.
+- Updated architecture, compatibility and manual testing documentation for Smart Presence, CMI/EssentialsX, Folia-safe AFK sampling, dry-run, per-region overrides and raid sessions.
+
 ## 1.2.0
 
 Public usability and observability update.

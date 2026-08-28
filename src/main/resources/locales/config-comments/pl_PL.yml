@@ -13,6 +13,10 @@ integration:
     - Tryb WorldGuard. dynamic-passthrough tworzy prawdziwe okna rajdów; overlay tylko dodaje ochronę ClaimShift.
     manage-all-owned-regions:
     - Przy false istniejące regiony WorldGuard nie są automatycznie zarządzane dynamicznie.
+    auto-manage-new-regions:
+    - Automatycznie zarządzaj kwalifikującymi się regionami WorldGuard utworzonymi po raz pierwszy podczas działania ClaimShift.
+    - Regiony istniejące przy pierwszym wykryciu świata są zapisywane jako stare/statyczne, więc instalacja nie konwertuje automatycznie istniejących claimów.
+    - Nowe regiony nadal można wymusić jako statyczne przez claimshift-dynamic deny lub excluded-regions.
     manage-existing-passthrough-regions:
     - Przy false regiony z wcześniejszym passthrough ALLOW pozostają bez zmian.
     included-regions:
@@ -26,6 +30,16 @@ integration:
     - Lands obecnie obsługuje tylko overlay.
 metrics:
   enabled:
-  - Włącza anonimowe metryki bStats. Globalna rezygnacja z bStats jest zawsze respektowana.
+  - Włącz anonimowe metryki ClaimShift przez bStats.
+  - Oprócz standardowych danych bStats wysyłane są tylko ogólne ustawienia ClaimShift: polityka obecności, provider, tryb WorldGuard, język wiadomości, Smart Presence, wykrywanie wzorców i globalny przełącznik rajdów.
+  - Wykresy ClaimShift nie zawierają identyfikatorów graczy, nazw claimów ani adresów serwera.
+  - Globalna rezygnacja z bStats w plugins/bStats/config.yml jest zawsze respektowana.
 debug:
 - Włącza dodatkową diagnostykę ClaimShift w konsoli.
+diagnostics:
+  dry-run:
+  - Tryb bezpieczeństwa pierwszej instalacji. ClaimShift tylko podgląda decyzje i nie zmienia WorldGuard ani nie blokuje akcji.
+  log-transitions:
+  - Loguj zmiany dry-run w konsoli; identyczne powtórzenia są pomijane.
+  operator-notice:
+  - Pokazuj operatorom tytuł/wiadomość, gdy dry-run jest włączony.

@@ -4,9 +4,16 @@ protection:
   enabled:
   - ClaimShift 保护和 WorldGuard 动态访问的总开关。
   presence-policy:
-  - 决定哪种所有者在线状态允许突袭：online-open 或 offline-open。
-  offline-delay:
-  - 最后一名有效所有者离线后的延迟。示例：30s、1m、10m、1h。
+  - 控制活跃所有者存在状态下哪一种状态允许被袭击。
+  - online-open：至少一名活跃所有者 = OPEN；状态切换前分别应用 owner-active 与 owner-inactive 延迟。
+  - offline-open：至少一名活跃所有者 = PROTECTED；最后一名活跃所有者失效后，领地在 owner-inactive 时间内继续受保护，之后变为 OPEN。活跃所有者返回已经开放的领地时，owner-active 会延迟保护恢复。
+  transition-delays:
+    owner-active:
+    - 第一名活跃所有者出现后，在应用活跃状态前等待的时间。
+    - 默认 offline-open 中这是保护恢复延迟。全新安装默认：5m。使用 0 或 0s 可关闭此延迟。
+    owner-inactive:
+    - 最后一名活跃所有者不再被视为在线后，在应用无活跃所有者状态前等待的时间。
+    - 默认 offline-open 中这是领地变为可袭击状态前的延迟。全新安装默认：1h。使用 0 或 0s 可关闭此延迟。
   protect-unknown-offline-owners:
   - 为 true 时，重启后无法确定离线时间的领地会保持受保护状态。
   trusted-players-bypass:
@@ -43,3 +50,50 @@ protection:
 notifications:
   cooldown:
   - 向同一玩家重复发送拒绝消息之间的最小间隔。
+presence:
+  smart:
+    enabled:
+    - Smart Presence 可将已连接但长时间无有效活动的所有者视为实际离线。
+    idle-timeout:
+    - 在线玩家无有效活动多久后被视为不活跃。
+    minimum-movement-distance:
+    - 玩家必须离上一次计入的位置至少移动这么远，移动才算有效活动。轻微抖动和只转动视角不会刷新在线状态。
+    external-afk:
+      enabled:
+      - 安装 CMI/EssentialsX 时使用其 AFK 状态。
+      cmi:
+      - CMI 集成可用时使用其 AFK 状态。
+      essentialsx:
+      - EssentialsX 集成可用时使用其 AFK 状态。
+    patterns:
+      enabled:
+      - 检测简单的低频周期性保活操作，例如每隔几分钟跳跃一次或执行一次命令。
+      minimum-samples:
+      - 需要多少次相同重复后，周期模式不再被视为有效活动。
+      minimum-interval:
+      - 只有达到或超过该间隔的低频重复才会作为 AFK 保活候选。
+      interval-tolerance:
+      - 各次重复间隔允许的最大差异，低于该值时序列会被视为周期模式。
+  anti-relog:
+    enabled:
+    - 可选的反重登确认机制。默认关闭，因为它会改变正常的重新连接行为。
+    window:
+    - 在该时间窗口内重新连接的玩家需要经过确认时间。
+    qualification-time:
+    - 这类重新连接需要保持在线多久，才会再次计为活跃所有者。
+  max-continuous-presence:
+    enabled:
+    - 可选的单次连续在线硬上限。默认关闭。
+    duration:
+    - 连续在线达到该时长后，所有者将不再被视为活跃。
+raids:
+  enabled:
+  - 可选突袭锁：在 OPEN 状态开始的突袭可在会话期间保持区域开放。
+  inactivity-timeout:
+  - 在这么长时间没有符合条件的突袭活动后结束突袭会话。
+  maximum-duration:
+  - 突袭会话的绝对最长持续时间，用于防止区域被无限保持开放。
+  extend-on-activity:
+  - 只要符合条件的突袭活动继续，就刷新无活动计时器。
+  trigger-actions:
+  - 当区域已经处于 OPEN 时，可以开始或延长突袭的保护动作键。

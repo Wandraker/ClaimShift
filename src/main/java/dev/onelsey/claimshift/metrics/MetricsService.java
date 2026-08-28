@@ -74,6 +74,18 @@ public final class MetricsService {
                     "messages_locale",
                     () -> configuration.pluginSettings().messagesLocale()
             ));
+            created.addCustomChart(new SimplePie(
+                    "smart_presence",
+                    () -> configuration.ruleSettings().presence().smartEnabled() ? "enabled" : "disabled"
+            ));
+            created.addCustomChart(new SimplePie(
+                    "pattern_detection",
+                    () -> configuration.ruleSettings().presence().patternDetectionEnabled() ? "enabled" : "disabled"
+            ));
+            created.addCustomChart(new SimplePie(
+                    "raid_sessions",
+                    () -> configuration.ruleSettings().raids().enabled() ? "enabled" : "disabled"
+            ));
             metrics = created;
         } catch (LinkageError | RuntimeException exception) {
             metrics = null;

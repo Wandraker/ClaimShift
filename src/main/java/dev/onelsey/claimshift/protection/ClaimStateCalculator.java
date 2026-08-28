@@ -21,57 +21,152 @@ public final class ClaimStateCalculator {
     private ClaimStateCalculator() {
     }
 
+    /**
+     * Compatibility overload for the pre-1.3 one-way delay model. Online/effective
+     * transitions are immediate and the old offline delay becomes inactiveDelay.
+     */
     public static Result calculate(
             Set<UUID> owners,
-            Set<UUID> onlineOwners,
-            Map<UUID, Duration> knownOfflineAges,
+            Set<UUID> effectiveOwners,
+            Map<UUID, Duration> knownInactiveAges,
             PresencePolicy presencePolicy,
             Duration offlineDelay,
             boolean protectUnknownOfflineOwners
     ) {
-        PresencePolicy policy = presencePolicy == null ? PresencePolicy.ONLINE_OPEN : presencePolicy;
+        return calculate(
+                owners,
+                effectiveOwners,
+                Map.of(),
+                knownInactiveAges,
+                presencePolicy,
+                Duration.ZERO,
+                offlineDelay,
+                protectUnknownOfflineOwners,
+                null
+        );
+    }
+
+    /**
+     * Calculates the desired claim state using two independent transition delays.
+     *
+     * @param effectiveAges age of each currently effective owner state
+     * @param knownInactiveAges age of each known inactive owner state
+     * @param activeDelay delay after the presence condition becomes active
+     * @param inactiveDelay delay after the last effective owner becomes inactive
+     * @param currentlyDynamicOpen null when the provider cannot report current
+     *                             dynamic state; otherwise true when ClaimShift is
+     *                             already holding the claim open. This prevents a
+     *                             reverse delay from creating a new vulnerability
+     *                             when the claim is already in its target state.
+     */
+    public static Result calculate(
+            Set<UUID> owners,
+            Set<UUID> effectiveOwners,
+            Map<UUID, Duration> effectiveAges,
+            Map<UUID, Duration> knownInactiveAges,
+            PresencePolicy presencePolicy,
+            Duration activeDelay,
+            Duration inactiveDelay,
+            boolean protectUnknownOfflineOwners,
+            Boolean currentlyDynamicOpen
+    ) {
+        PresencePolicy policy = presencePolicy == null ? PresencePolicy.OFFLINE_OPEN : presencePolicy;
+        Duration safeActiveDelay = safe(activeDelay);
+        Duration safeInactiveDelay = safe(inactiveDelay);
+
         if (owners == null || owners.isEmpty()) {
             return new Result(ClaimState.OPEN, Duration.ZERO, false);
         }
-        if (onlineOwners != null && !onlineOwners.isEmpty()) {
-            boolean protectedNow = policy == PresencePolicy.OFFLINE_OPEN;
-            return new Result(protectedNow ? ClaimState.PROTECTED : ClaimState.OPEN, Duration.ZERO, protectedNow);
-        }
 
-        Duration longestRemaining = Duration.ZERO;
-        boolean hasUnknownOfflineOwner = false;
-        for (UUID owner : owners) {
-            Duration age = knownOfflineAges.get(owner);
-            if (age == null) {
-                hasUnknownOfflineOwner = true;
-                if (!protectUnknownOfflineOwners) {
-                    continue;
-                }
-                // Unknown owners do not extend a known grace period. They only
-                // decide the safe restart fallback when no timed transition exists.
-                continue;
+        Set<UUID> active = effectiveOwners == null ? Set.of() : effectiveOwners;
+        Map<UUID, Duration> activeAges = effectiveAges == null ? Map.of() : effectiveAges;
+        Map<UUID, Duration> inactiveAges = knownInactiveAges == null ? Map.of() : knownInactiveAges;
+
+        if (!active.isEmpty()) {
+            boolean targetProtected = policy == PresencePolicy.OFFLINE_OPEN;
+            if (alreadyAtTarget(currentlyDynamicOpen, targetProtected)) {
+                return target(targetProtected);
             }
 
-            Duration safeAge = age.isNegative() ? Duration.ZERO : age;
-            Duration remaining = offlineDelay.minus(safeAge);
+            Duration conditionAge = longestAge(active, activeAges);
+            Duration remaining = remaining(safeActiveDelay, conditionAge);
+            if (remaining.isPositive()) {
+                // During the transition keep the state that applied before an
+                // effective owner appeared.
+                return new Result(ClaimState.GRACE, remaining, !targetProtected);
+            }
+            return target(targetProtected);
+        }
+
+        boolean targetProtected = policy == PresencePolicy.ONLINE_OPEN;
+
+        Duration longestRemaining = Duration.ZERO;
+        boolean hasUnknownInactiveOwner = false;
+        for (UUID owner : owners) {
+            Duration age = inactiveAges.get(owner);
+            if (age == null) {
+                hasUnknownInactiveOwner = true;
+                continue;
+            }
+            Duration remaining = remaining(safeInactiveDelay, safe(age));
             if (remaining.isPositive() && remaining.compareTo(longestRemaining) > 0) {
                 longestRemaining = remaining;
             }
         }
 
+        if (!hasUnknownInactiveOwner && alreadyAtTarget(currentlyDynamicOpen, targetProtected)) {
+            return target(targetProtected);
+        }
+
         if (longestRemaining.isPositive()) {
-            boolean protectedDuringGrace = policy == PresencePolicy.OFFLINE_OPEN;
-            return new Result(ClaimState.GRACE, longestRemaining, protectedDuringGrace);
+            return new Result(ClaimState.GRACE, longestRemaining, !targetProtected);
         }
 
-        if (hasUnknownOfflineOwner) {
-            if (protectUnknownOfflineOwners) {
-                return new Result(ClaimState.PROTECTED, Duration.ZERO, true);
-            }
-            return new Result(ClaimState.OPEN, Duration.ZERO, false);
+        if (hasUnknownInactiveOwner) {
+            // Unknown timestamps are a restart/integration edge case. Keep the
+            // explicit fail-closed/fail-open contract instead of guessing an age.
+            return protectUnknownOfflineOwners
+                    ? new Result(ClaimState.PROTECTED, Duration.ZERO, true)
+                    : new Result(ClaimState.OPEN, Duration.ZERO, false);
         }
 
-        boolean protectedNow = policy == PresencePolicy.ONLINE_OPEN;
-        return new Result(protectedNow ? ClaimState.PROTECTED : ClaimState.OPEN, Duration.ZERO, protectedNow);
+        return target(targetProtected);
+    }
+
+    private static Result target(boolean protectedNow) {
+        return new Result(
+                protectedNow ? ClaimState.PROTECTED : ClaimState.OPEN,
+                Duration.ZERO,
+                protectedNow
+        );
+    }
+
+    private static boolean alreadyAtTarget(Boolean currentlyDynamicOpen, boolean targetProtected) {
+        if (currentlyDynamicOpen == null) return false;
+        boolean currentlyProtected = !currentlyDynamicOpen;
+        return currentlyProtected == targetProtected;
+    }
+
+    /**
+     * The presence condition is active as long as at least one effective owner is
+     * active. Therefore its age is the longest current effective-owner age.
+     */
+    private static Duration longestAge(Set<UUID> activeOwners, Map<UUID, Duration> ages) {
+        Duration longest = Duration.ZERO;
+        for (UUID owner : activeOwners) {
+            Duration age = safe(ages.get(owner));
+            if (age.compareTo(longest) > 0) longest = age;
+        }
+        return longest;
+    }
+
+    private static Duration remaining(Duration delay, Duration age) {
+        if (delay.isZero()) return Duration.ZERO;
+        Duration value = delay.minus(age);
+        return value.isNegative() ? Duration.ZERO : value;
+    }
+
+    private static Duration safe(Duration value) {
+        return value == null || value.isNegative() ? Duration.ZERO : value;
     }
 }

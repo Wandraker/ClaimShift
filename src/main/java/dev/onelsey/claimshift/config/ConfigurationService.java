@@ -19,6 +19,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,6 +62,7 @@ public final class ConfigurationService {
             YamlConfiguration messages = loadFileYaml(messagesFile);
             boolean legacyMessagesFile = !messages.contains("config-version");
 
+            migrateConfigSchema(config);
             migrateRulesSchema(rules);
             mergeMissing(config, loadResourceYaml("config.yml"));
             mergeMissing(rules, loadResourceYaml("rules.yml"));
@@ -102,6 +104,28 @@ public final class ConfigurationService {
         }
     }
 
+    public synchronized ReloadResult setDryRun(boolean enabled) {
+        long started = System.nanoTime();
+        byte[] original;
+        try {
+            original = Files.readAllBytes(configFile.toPath());
+            YamlConfiguration config = loadFileYaml(configFile);
+            migrateConfigSchema(config);
+            mergeMissing(config, loadResourceYaml("config.yml"));
+            config.set("diagnostics.dry-run", enabled);
+            atomicSave(configFile, config);
+            ReloadResult result = reload();
+            if (!result.success()) {
+                Files.write(configFile.toPath(), original);
+                reload();
+                return ReloadResult.failure(elapsedMillis(started), result.error());
+            }
+            return ReloadResult.success(elapsedMillis(started));
+        } catch (Exception exception) {
+            return ReloadResult.failure(elapsedMillis(started), rootMessage(exception));
+        }
+    }
+
     public synchronized ReloadResult changeLocale(String locale, boolean configScope, boolean messagesScope) {
         long started = System.nanoTime();
         String canonical = canonicalLocale(locale);
@@ -133,8 +157,8 @@ public final class ConfigurationService {
     }
 
     private PluginSettings parsePluginSettings(YamlConfiguration config) {
-        int schema = config.getInt("config-version", 1);
-        if (schema > 1) {
+        int schema = config.getInt("config-version", 3);
+        if (schema > 3) {
             throw new IllegalArgumentException("config.yml was created by a newer ClaimShift version (schema " + schema + ")");
         }
 
@@ -163,6 +187,7 @@ public final class ConfigurationService {
         WorldGuardSettings worldGuard = new WorldGuardSettings(
                 wgMode,
                 config.getBoolean("integration.worldguard.manage-all-owned-regions", false),
+                config.getBoolean("integration.worldguard.auto-manage-new-regions", true),
                 config.getBoolean("integration.worldguard.manage-existing-passthrough-regions", false),
                 included,
                 excluded,
@@ -174,6 +199,12 @@ public final class ConfigurationService {
             throw new IllegalArgumentException("Unsupported Lands mode: " + landsMode);
         }
 
+        DiagnosticsSettings diagnostics = new DiagnosticsSettings(
+                config.getBoolean("diagnostics.dry-run", false),
+                config.getBoolean("diagnostics.log-transitions", true),
+                config.getBoolean("diagnostics.operator-notice", true)
+        );
+
         return new PluginSettings(
                 configLocale,
                 messagesLocale,
@@ -181,26 +212,111 @@ public final class ConfigurationService {
                 worldGuard,
                 landsMode,
                 config.getBoolean("metrics.enabled", true),
+                diagnostics,
                 config.getBoolean("debug", false)
         );
     }
 
     private RuleSettings parseRuleSettings(YamlConfiguration rules) {
-        int schema = rules.getInt("config-version", 2);
-        if (schema > 2) {
+        int schema = rules.getInt("config-version", 4);
+        if (schema > 4) {
             throw new IllegalArgumentException("rules.yml was created by a newer ClaimShift version (schema " + schema + ")");
         }
 
         PresencePolicy presencePolicy = PresencePolicy.parse(
-                rules.getString("protection.presence-policy", "online-open")
+                rules.getString("protection.presence-policy", "offline-open")
         );
-        Duration offlineDelay = DurationParser.parse(rules.getString("protection.offline-delay", "10m"));
+        Duration activeDelay = parseDurationValue(
+                rules, "protection.transition-delays.owner-active", "5m"
+        );
+        Duration inactiveDelay = parseDurationValue(
+                rules, "protection.transition-delays.owner-inactive", "1h"
+        );
         Duration notificationCooldown = DurationParser.parse(rules.getString("notifications.cooldown", "1500ms"));
-        if (offlineDelay.isNegative()) {
-            throw new IllegalArgumentException("Offline delay cannot be negative");
+        if (activeDelay.isNegative() || inactiveDelay.isNegative()) {
+            throw new IllegalArgumentException("Presence transition delays cannot be negative");
         }
         if (notificationCooldown.isNegative()) {
             throw new IllegalArgumentException("Notification cooldown cannot be negative");
+        }
+
+        Duration idleTimeout = DurationParser.parse(rules.getString("presence.smart.idle-timeout", "20m"));
+        Duration patternMinimumInterval = DurationParser.parse(rules.getString("presence.smart.patterns.minimum-interval", "30s"));
+        Duration patternTolerance = DurationParser.parse(rules.getString("presence.smart.patterns.interval-tolerance", "3s"));
+        Duration relogWindow = DurationParser.parse(rules.getString("presence.anti-relog.window", "5m"));
+        Duration relogQualification = DurationParser.parse(rules.getString("presence.anti-relog.qualification-time", "2m"));
+        Duration maxPresence = DurationParser.parse(rules.getString("presence.max-continuous-presence.duration", "8h"));
+
+        if (idleTimeout.isZero() || idleTimeout.isNegative()) {
+            throw new IllegalArgumentException("Smart presence idle timeout must be greater than zero");
+        }
+        if (patternMinimumInterval.isNegative() || patternTolerance.isNegative()) {
+            throw new IllegalArgumentException("Pattern timing values cannot be negative");
+        }
+        if (relogWindow.isNegative() || relogQualification.isNegative()) {
+            throw new IllegalArgumentException("Anti-relog timing values cannot be negative");
+        }
+        if (maxPresence.isNegative()) {
+            throw new IllegalArgumentException("Maximum continuous presence cannot be negative");
+        }
+
+        double minimumMovementDistance = rules.getDouble("presence.smart.minimum-movement-distance", 3.0);
+        if (minimumMovementDistance < 0.0 || minimumMovementDistance > 64.0) {
+            throw new IllegalArgumentException("Smart presence minimum-movement-distance must be between 0 and 64 blocks");
+        }
+
+        int patternMinimumSamples = rules.getInt("presence.smart.patterns.minimum-samples", 5);
+        if (patternMinimumSamples < 3 || patternMinimumSamples > 32) {
+            throw new IllegalArgumentException("Pattern minimum-samples must be between 3 and 32");
+        }
+
+        PresenceSettings presence = new PresenceSettings(
+                rules.getBoolean("presence.smart.enabled", true),
+                idleTimeout,
+                minimumMovementDistance,
+                rules.getBoolean("presence.smart.patterns.enabled", true),
+                patternMinimumSamples,
+                patternMinimumInterval,
+                patternTolerance,
+                rules.getBoolean("presence.smart.external-afk.enabled", true),
+                rules.getBoolean("presence.smart.external-afk.cmi", true),
+                rules.getBoolean("presence.smart.external-afk.essentialsx", true),
+                rules.getBoolean("presence.anti-relog.enabled", false),
+                relogWindow,
+                relogQualification,
+                rules.getBoolean("presence.max-continuous-presence.enabled", false),
+                maxPresence
+        );
+
+        Set<ProtectionAction> raidTriggers = EnumSet.noneOf(ProtectionAction.class);
+        for (String key : rules.getStringList("raids.trigger-actions")) {
+            ProtectionAction matched = null;
+            for (ProtectionAction action : ProtectionAction.values()) {
+                if (action.configKey().equalsIgnoreCase(key)) {
+                    matched = action;
+                    break;
+                }
+            }
+            if (matched == null) {
+                throw new IllegalArgumentException("Unknown raid trigger action: " + key);
+            }
+            raidTriggers.add(matched);
+        }
+        RaidSettings raids = new RaidSettings(
+                rules.getBoolean("raids.enabled", false),
+                DurationParser.parse(rules.getString("raids.inactivity-timeout", "10m")),
+                DurationParser.parse(rules.getString("raids.maximum-duration", "30m")),
+                rules.getBoolean("raids.extend-on-activity", true),
+                raidTriggers
+        );
+        // Per-region claimshift-raids: allow can enable sessions even when the
+        // global switch is false, so timing must always be valid.
+        if (raids.inactivityTimeout().isZero()) {
+            throw new IllegalArgumentException("Raid inactivity-timeout must be greater than zero");
+        }
+        if (!raids.maximumDuration().isZero()
+                && raids.maximumDuration().compareTo(raids.inactivityTimeout()) < 0) {
+            throw new IllegalArgumentException("Raid maximum-duration cannot be shorter than inactivity-timeout");
         }
 
         Map<ProtectionAction, Boolean> actions = new EnumMap<>(ProtectionAction.class);
@@ -211,17 +327,46 @@ public final class ConfigurationService {
         return new RuleSettings(
                 rules.getBoolean("protection.enabled", true),
                 presencePolicy,
-                offlineDelay,
+                activeDelay,
+                inactiveDelay,
                 rules.getBoolean("protection.protect-unknown-offline-owners", true),
                 rules.getBoolean("protection.trusted-players-bypass", true),
+                presence,
+                raids,
                 notificationCooldown,
                 actions
         );
     }
 
+    private void migrateConfigSchema(YamlConfiguration config) {
+        int schema = config.getInt("config-version", 1);
+        if (schema > 3) {
+            throw new IllegalArgumentException("config.yml was created by a newer ClaimShift version (schema " + schema + ")");
+        }
+        if (schema < 2) {
+            // Upgrades must never silently enter dry-run. The bundled fresh-install
+            // config has dry-run=true, while existing installations migrate to false.
+            if (!config.contains("diagnostics.dry-run")) {
+                config.set("diagnostics.dry-run", false);
+            }
+            config.set("config-version", 2);
+            schema = 2;
+        }
+        if (schema < 3) {
+            // Existing regions are classified by the persistent WorldGuard registry
+            // when this version first starts. Future regions created while
+            // ClaimShift is running can then be opted in automatically without
+            // changing any pre-existing server regions.
+            if (!config.contains("integration.worldguard.auto-manage-new-regions")) {
+                config.set("integration.worldguard.auto-manage-new-regions", true);
+            }
+            config.set("config-version", 3);
+        }
+    }
+
     private void migrateRulesSchema(YamlConfiguration rules) {
         int schema = rules.getInt("config-version", 1);
-        if (schema > 2) {
+        if (schema > 4) {
             throw new IllegalArgumentException("rules.yml was created by a newer ClaimShift version (schema " + schema + ")");
         }
         if (schema < 2) {
@@ -234,9 +379,33 @@ public final class ConfigurationService {
             }
             rules.set("protection.activation-delay", null);
             rules.set("config-version", 2);
+            schema = 2;
+        }
+        if (schema < 3) {
+            // Smart Presence is a safe anti-abuse improvement and intentionally
+            // becomes enabled for upgraded installations. More aggressive controls
+            // (anti-relog, max-session and raid locks) stay disabled by default.
+            rules.set("config-version", 3);
+            schema = 3;
+        }
+        if (schema < 4) {
+            // Preserve the old delay semantics for existing installations. The
+            // old offline-delay was specifically the transition after the last
+            // active owner became inactive. The new reverse transition did not
+            // exist before 1.3, so upgrades keep it immediate instead of silently
+            // changing live raid behaviour.
+            Object oldInactiveDelay = rules.get("protection.offline-delay");
+            if (!rules.contains("protection.transition-delays.owner-inactive")) {
+                rules.set("protection.transition-delays.owner-inactive",
+                        oldInactiveDelay == null ? "10m" : oldInactiveDelay);
+            }
+            if (!rules.contains("protection.transition-delays.owner-active")) {
+                rules.set("protection.transition-delays.owner-active", "0s");
+            }
+            rules.set("protection.offline-delay", null);
+            rules.set("config-version", 4);
         }
     }
-
 
     private void validateMessagesSchema(YamlConfiguration messages) {
         int schema = messages.getInt("config-version", 1);
@@ -308,6 +477,20 @@ public final class ConfigurationService {
             target.setComments(key, List.of());
             target.setInlineComments(key, List.of());
         }
+    }
+
+    private Duration parseDurationValue(YamlConfiguration yaml, String path, String fallback) {
+        Object raw = yaml.get(path);
+        if (raw == null) {
+            return DurationParser.parse(fallback);
+        }
+        if (raw instanceof Number number) {
+            if (number.doubleValue() == 0.0d) {
+                return Duration.ZERO;
+            }
+            throw new IllegalArgumentException("Duration at '" + path + "' must include a unit (or be 0 to disable it)");
+        }
+        return DurationParser.parse(String.valueOf(raw));
     }
 
     private Set<String> normalizeSelectors(List<String> values) {

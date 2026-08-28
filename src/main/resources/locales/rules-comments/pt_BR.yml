@@ -4,9 +4,20 @@ protection:
   enabled:
   - Chave principal da proteção ClaimShift e do acesso dinâmico WorldGuard.
   presence-policy:
-  - 'Define qual estado de presença permite raid: online-open ou offline-open.'
-  offline-delay:
-  - 'Atraso após a saída do último proprietário efetivo. Exemplos: 30s, 1m, 10m, 1h.'
+  - Controla qual estado de presença dos proprietários ativos pode ser invadido.
+  - 'online-open: pelo menos um proprietário ativo = OPEN; os atrasos owner-active e owner-inactive são aplicados antes da
+    troca de estado.'
+  - 'offline-open: pelo menos um proprietário ativo = PROTECTED; depois do último proprietário ativo, a claim continua protegida
+    por owner-inactive e então fica OPEN. Se um proprietário ativo voltar a uma claim já aberta, owner-active atrasa a restauração
+    da proteção.'
+  transition-delays:
+    owner-active:
+    - Atraso após o primeiro proprietário ativo aparecer antes de aplicar o estado ativo.
+    - 'No offline-open padrão este é o atraso para restaurar a proteção. Padrão de instalação nova: 5m. Use 0 ou 0s para desativar.'
+    owner-inactive:
+    - Atraso após o último proprietário ativo deixar de contar como presente antes de aplicar o estado sem proprietários ativos.
+    - 'No offline-open padrão este é o tempo antes da claim ficar disponível para raid. Padrão de instalação nova: 1h. Use
+      0 ou 0s para desativar.'
   protect-unknown-offline-owners:
   - Se true, claims com horário offline desconhecido após reinício permanecem protegidos.
   trusted-players-bypass:
@@ -43,3 +54,51 @@ protection:
 notifications:
   cooldown:
   - Tempo mínimo entre mensagens de bloqueio repetidas para o mesmo jogador.
+presence:
+  smart:
+    enabled:
+    - Smart Presence pode tratar proprietários conectados porém inativos como ausentes.
+    idle-timeout:
+    - Tempo sem atividade significativa antes de um jogador online ser considerado inativo.
+    minimum-movement-distance:
+    - Distância mínima da última posição aceita para que o movimento conte como atividade significativa. Pequenos movimentos
+      e apenas olhar ao redor não renovam a presença.
+    external-afk:
+      enabled:
+      - Usar o estado AFK do CMI/EssentialsX quando esses plugins estiverem instalados.
+      cmi:
+      - Usar o estado AFK do CMI quando a integração estiver disponível.
+      essentialsx:
+      - Usar o estado AFK do EssentialsX quando a integração estiver disponível.
+    patterns:
+      enabled:
+      - Detectar ações periódicas simples de keep-alive, como pular ou executar um comando a cada poucos minutos.
+      minimum-samples:
+      - Número de repetições iguais necessário antes de o padrão deixar de contar como atividade significativa.
+      minimum-interval:
+      - Apenas repetições de baixa frequência com este intervalo ou maior são consideradas possíveis keep-alives AFK.
+      interval-tolerance:
+      - Variação máxima entre intervalos para que uma sequência seja considerada periódica.
+  anti-relog:
+    enabled:
+    - Qualificação anti-relog opcional. Desativada por padrão porque altera o comportamento normal de reconexão.
+    window:
+    - Reconexões dentro desta janela passam pelo período de qualificação.
+    qualification-time:
+    - Quanto tempo uma reconexão qualificada deve permanecer online antes de voltar a contar como presença ativa.
+  max-continuous-presence:
+    enabled:
+    - Limite rígido opcional para uma sessão contínua online. Desativado por padrão.
+    duration:
+    - Tempo máximo online continuamente antes de o proprietário deixar de contar como ativo.
+raids:
+  enabled:
+  - 'Bloqueio de raid opcional: uma raid iniciada em OPEN pode manter a região aberta durante a sessão.'
+  inactivity-timeout:
+  - Encerrar a sessão de raid após este tempo sem atividade de raid válida.
+  maximum-duration:
+  - Duração máxima absoluta de uma sessão de raid para impedir bloqueios indefinidos.
+  extend-on-activity:
+  - Renovar o tempo de inatividade enquanto continuar atividade de raid válida.
+  trigger-actions:
+  - Chaves de ações de proteção que podem iniciar ou prolongar uma raid enquanto o claim já está OPEN.

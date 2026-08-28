@@ -13,6 +13,10 @@ integration:
     - Mode WorldGuard. dynamic-passthrough crée de vraies fenêtres de raid ; overlay ajoute seulement la protection ClaimShift.
     manage-all-owned-regions:
     - Avec false, les régions WorldGuard existantes ne sont pas gérées dynamiquement automatiquement.
+    auto-manage-new-regions:
+    - Gérer automatiquement les régions WorldGuard éligibles créées pour la première fois pendant que ClaimShift fonctionne.
+    - Les régions déjà présentes lors de la première détection d'un monde sont enregistrées comme anciennes/statiques, afin que l'installation ne convertisse jamais automatiquement les claims existants.
+    - Les nouvelles régions peuvent toujours être forcées en statique avec claimshift-dynamic deny ou excluded-regions.
     manage-existing-passthrough-regions:
     - Avec false, les régions ayant déjà passthrough ALLOW ne sont pas modifiées.
     included-regions:
@@ -26,6 +30,16 @@ integration:
     - Lands prend actuellement en charge uniquement overlay.
 metrics:
   enabled:
-  - Active les métriques anonymes bStats. Le refus global bStats est toujours respecté.
+  - Activer les métriques anonymes ClaimShift via bStats.
+  - En plus des statistiques bStats standard, seules des options générales de ClaimShift sont envoyées : politique de présence, fournisseur, mode WorldGuard, langue des messages, Smart Presence, détection de motifs et interrupteur global des raids.
+  - Les graphiques ClaimShift n’incluent aucun identifiant de joueur, nom de claim ni adresse de serveur.
+  - Le refus global bStats dans plugins/bStats/config.yml est toujours respecté.
 debug:
 - Active des diagnostics ClaimShift supplémentaires dans la console.
+diagnostics:
+  dry-run:
+  - Mode de sécurité de première installation. ClaimShift prévisualise les décisions sans modifier WorldGuard ni bloquer les actions.
+  log-transitions:
+  - Journaliser les changements dry-run dans la console; les répétitions identiques sont supprimées.
+  operator-notice:
+  - Afficher aux opérateurs une notification titre/chat tant que le dry-run est actif.

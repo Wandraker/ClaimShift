@@ -31,7 +31,8 @@ messages:
   info-label-messages-locale: Мова повідомлень
   info-label-metrics: Анонімна статистика
   info-label-presence-policy: Політика присутності
-  info-label-offline-delay: Затримка офлайн-переходу
+  info-label-active-delay: Затримка після появи активного власника
+  info-label-inactive-delay: Затримка після зникнення активних власників
   info-label-managed-regions: Керовані регіони
   info-label-open-regions: Відкриті регіони
   info-label-grace-regions: Регіони в очікуванні
@@ -43,7 +44,7 @@ messages:
   inspect-label-id: ID
   inspect-label-provider: Система
   inspect-label-state: Стан
-  inspect-label-owners: Ефективні власники
+  inspect-label-owners: Власники
   inspect-label-online-owners: Власники онлайн
   inspect-label-managed: Динамічний доступ
   inspect-label-remaining: Перехід через
@@ -59,11 +60,47 @@ messages:
   state-grace: ОЧІКУВАННЯ
   state-protected: ЗАХИЩЕНИЙ
   state-static: СТАТИЧНИЙ / НЕ КЕРУЄТЬСЯ
-  presence-policy-online-open: Власник онлайн = ВІДКРИТИЙ
-  presence-policy-offline-open: Власник офлайн = ВІДКРИТИЙ
+  presence-policy-online-open: Активний власник = OPEN
+  presence-policy-offline-open: Немає активних власників = OPEN
   provider-mode-dynamic-passthrough: Динамічний passthrough
   provider-mode-overlay: Накладний захист
   provider-mode-disabled: Вимкнений
   provider-mode-starting: Запуск
   provider-mode-inactive: Неактивний
   provider-mode-unknown: Невідомо
+  dry-run-title: '<warning><bold>ClaimShift: ДІАГНОСТИКА</bold></warning>'
+  dry-run-subtitle: '<muted>Лише попередній перегляд — вимкнути: <white><command></white></muted>'
+  dry-run-notice: '<prefix> <warning>Режим діагностики dry-run увімкнено.</warning> <muted>ClaimShift не змінює регіони та не блокує дії. Вимкнути: <white><command></white></muted>'
+  dry-run-status: '<prefix> <muted>Dry-run: <white><state></white>. Вимкнути: <white><command></white></muted>'
+  dry-run-enabled: '<prefix> <warning>Dry-run увімкнено.</warning> <muted>ClaimShift лише моделює зміни. Вимкнути: <white><command></white>.</muted>'
+  dry-run-disabled: <prefix> <success>Dry-run вимкнено.</success> <muted>ClaimShift тепер може застосовувати налаштовані стани регіонів.</muted>
+  dry-run-failed: <prefix> <error>Не вдалося змінити режим dry-run.</error> <muted><reason></muted>
+  dry-run-usage: '<prefix> <warning>Використання: <white><command></white></warning>'
+  help-dry-run-description: Увімкнути, вимкнути або перевірити безпечну діагностику dry-run.
+  info-label-smart-presence: Розумна присутність
+  info-label-pattern-detection: Виявлення шаблонів
+  info-label-dry-run: Діагностика dry-run
+  info-label-raids: Рейд-сесії
+  info-label-active-raids: Активні рейд-сесії
+  inspect-label-effective-owners: Активні власники
+  inspect-label-raid-active: Рейд-сесія активна
+  inspect-label-raid-remaining: Залишок рейд-сесії
+  raid-started-owner: '<prefix> <warning>Ваш регіон <white><claim></white> атакують.</warning> <muted>Рейд-блокування діє, поки триває відповідна активність (поточне вікно: <white><remaining></white>).</muted>'
+  raid-ended-owner: <prefix> <success>Рейд-сесію регіону <white><claim></white> завершено.</success>
+  inspect-label-policy: Ефективна політика
+  inspect-label-active-delay: Затримка після появи активного власника
+  inspect-label-inactive-delay: Затримка після зникнення активних власників
+  inspect-label-raids-enabled: Рейд-сесії дозволені
+  inspect-label-management-source: Джерело керування
+  management-source-manual-allow: Увімкнено вручну через claimshift-dynamic allow
+  management-source-manual-deny: Вимкнено вручну через claimshift-dynamic deny
+  management-source-excluded: Виключено налаштуваннями
+  management-source-included: Увімкнено налаштуваннями
+  management-source-manage-all: manage-all-owned-regions
+  management-source-auto-new: Автоматично динамічний (створений після ClaimShift)
+  management-source-legacy-static: Старий/статичний (існував до ClaimShift)
+  management-source-existing-passthrough: Зберігається наявний passthrough ALLOW
+  management-source-ownerless: Статичний регіон без власників
+  management-source-static: Статичний / не керується
+  provider-mode-dry-run: Попередній перегляд dry-run
+  info-label-external-afk: Зовнішні джерела AFK

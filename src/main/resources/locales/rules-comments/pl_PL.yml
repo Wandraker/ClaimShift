@@ -4,9 +4,21 @@ protection:
   enabled:
   - Główny przełącznik ochrony ClaimShift i dynamicznego dostępu WorldGuard.
   presence-policy:
-  - 'Określa, który stan obecności pozwala na rajd: online-open lub offline-open.'
-  offline-delay:
-  - 'Opóźnienie po wyjściu ostatniego efektywnego właściciela. Przykłady: 30s, 1m, 10m, 1h.'
+  - Określa, który stan obecności aktywnych właścicieli jest podatny na rajd.
+  - 'online-open: co najmniej jeden aktywny właściciel = OPEN; przed zmianą stanu obowiązują osobne opóźnienia owner-active
+    i owner-inactive.'
+  - 'offline-open: co najmniej jeden aktywny właściciel = PROTECTED; po zniknięciu ostatniego aktywnego właściciela claim
+    pozostaje chroniony przez owner-inactive, a potem staje się OPEN. Powrót aktywnego właściciela do otwartego claimu uruchamia
+    owner-active przed przywróceniem ochrony.'
+  transition-delays:
+    owner-active:
+    - Opóźnienie po pojawieniu się pierwszego aktywnego właściciela przed zastosowaniem stanu aktywnego.
+    - 'W domyślnym offline-open jest to opóźnienie przywrócenia ochrony. Domyślnie przy nowej instalacji: 5m. 0 lub 0s wyłącza
+      opóźnienie.'
+    owner-inactive:
+    - Opóźnienie po zniknięciu ostatniego aktywnego właściciela przed zastosowaniem stanu bez aktywnych właścicieli.
+    - 'W domyślnym offline-open jest to czas do otwarcia claimu na rajd. Domyślnie przy nowej instalacji: 1h. 0 lub 0s wyłącza
+      opóźnienie.'
   protect-unknown-offline-owners:
   - Przy true claimy z nieznanym czasem wyjścia po restarcie pozostają bezpiecznie chronione.
   trusted-players-bypass:
@@ -43,3 +55,51 @@ protection:
 notifications:
   cooldown:
   - Minimalny odstęp między powtarzanymi wiadomościami o blokadzie dla tego samego gracza.
+presence:
+  smart:
+    enabled:
+    - Smart Presence może traktować połączonego, lecz bezczynnego właściciela jako nieobecnego.
+    idle-timeout:
+    - Czas bez znaczącej aktywności przed uznaniem gracza online za nieaktywnego.
+    minimum-movement-distance:
+    - Minimalna odległość od ostatniej zaliczonej pozycji, aby ruch liczył się jako znacząca aktywność. Drobne ruchy i samo
+      rozglądanie się nie odświeżają obecności.
+    external-afk:
+      enabled:
+      - Używaj statusu AFK CMI/EssentialsX, jeśli te pluginy są zainstalowane.
+      cmi:
+      - Używaj statusu AFK CMI, gdy integracja jest dostępna.
+      essentialsx:
+      - Używaj statusu AFK EssentialsX, gdy integracja jest dostępna.
+    patterns:
+      enabled:
+      - Wykrywaj proste okresowe akcje keep-alive, np. skok lub komendę co kilka minut.
+      minimum-samples:
+      - Liczba zgodnych powtórzeń, po której okresowy wzorzec przestaje liczyć się jako znacząca aktywność.
+      minimum-interval:
+      - Tylko rzadkie powtórzenia o takim lub większym odstępie są uznawane za możliwy AFK keep-alive.
+      interval-tolerance:
+      - Maksymalna różnica między odstępami, przy której sekwencja jest uznawana za okresową.
+  anti-relog:
+    enabled:
+    - Opcjonalna kwalifikacja anti-relog. Domyślnie wyłączona, ponieważ zmienia normalne zachowanie po ponownym połączeniu.
+    window:
+    - Ponowne połączenia w tym oknie muszą przejść okres kwalifikacji.
+    qualification-time:
+    - Jak długo takie ponowne połączenie musi pozostać online, zanim znów zostanie uznane za aktywną obecność.
+  max-continuous-presence:
+    enabled:
+    - Opcjonalny twardy limit jednej ciągłej sesji online. Domyślnie wyłączony.
+    duration:
+    - Maksymalny nieprzerwany czas online, po którym właściciel przestaje być uznawany za aktywnego.
+raids:
+  enabled:
+  - 'Opcjonalna blokada rajdu: rajd rozpoczęty w OPEN może utrzymać region otwarty przez czas sesji.'
+  inactivity-timeout:
+  - Zakończ sesję rajdu po tym czasie bez kwalifikującej aktywności rajdowej.
+  maximum-duration:
+  - Twardy maksymalny czas sesji rajdu, aby region nie mógł pozostać otwarty bez końca.
+  extend-on-activity:
+  - Odświeżaj licznik bezczynności, gdy trwa kwalifikująca aktywność rajdowa.
+  trigger-actions:
+  - Klucze akcji ochrony, które mogą rozpocząć lub przedłużyć rajd, gdy claim jest już OPEN.

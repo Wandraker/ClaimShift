@@ -52,19 +52,33 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
     private final ClaimStateService states;
     private final String version;
     private final WorldGuardStateStore stateStore;
+    private final WorldGuardRegionRegistry regionRegistry;
     private final AtomicBoolean reconcileQueued = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
+    private final Map<WorldGuardStateStore.RegionKey, String> dryRunPreview = new HashMap<>();
+    /**
+     * Logical runtime OPEN state from the previous successful reconciliation.
+     * This is intentionally separate from stateStore: a region whose original
+     * passthrough is already ALLOW can still be logically OPEN/PROTECTED through
+     * ClaimShift event protection even though no temporary flag override needs to
+     * be persisted for crash recovery.
+     */
+    private final Set<WorldGuardStateStore.RegionKey> runtimeProjectedOpen = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private final Set<WorldGuardStateStore.RegionKey> dryRunProjectedOpen = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private volatile ScheduledTask reconcileTask;
+    private volatile ScheduledTask transitionWakeTask;
     private volatile ProviderDiagnostics diagnostics = ProviderDiagnostics.simple("starting");
 
     public WorldGuardClaimProvider(
             ClaimShiftPlugin plugin,
             ConfigurationService configuration,
-            ClaimStateService states
+            ClaimStateService states,
+            WorldGuardRegionRegistry regionRegistry
     ) {
         this.plugin = plugin;
         this.configuration = configuration;
         this.states = states;
+        this.regionRegistry = regionRegistry;
         Plugin worldGuard = plugin.getServer().getPluginManager().getPlugin("WorldGuard");
         if (worldGuard == null || !worldGuard.isEnabled()) {
             throw new IllegalStateException("WorldGuard is not enabled");
@@ -72,6 +86,9 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
         this.version = worldGuard.getPluginMeta().getVersion();
         this.stateStore = new WorldGuardStateStore(plugin);
         recoverStaleOverrides();
+        if (regionRegistry.beginSessionBootstrap()) {
+            bootstrapLoadedWorlds();
+        }
         if (dynamicModeEnabled()) {
             // ProviderManager constructs us on the global-region scheduler, so the
             // first reconciliation can run immediately. This makes startup state
@@ -197,9 +214,13 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
 
     @Override
     public void onWorldLoad(World world) {
-        // A world may be loaded after ClaimShift startup. If recovery metadata from
-        // an interrupted run exists, reconciliation treats it as the captured
-        // original state and either restores it or resumes dynamic control safely.
+        // A world loaded after startup may contain regions created while ClaimShift
+        // could not observe that world. Unknown regions are therefore baselined as
+        // legacy/static before normal reconciliation begins.
+        bootstrapWorldRegistry(world);
+        // If recovery metadata from an interrupted run exists, reconciliation treats
+        // it as the captured original state and either restores it or resumes dynamic
+        // control safely.
         requestReconcile();
     }
 
@@ -213,6 +234,9 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
         } catch (Exception exception) {
             plugin.getLogger().warning("Could not restore WorldGuard state before unloading world '"
                     + world.getName() + "': " + rootMessage(exception));
+        } finally {
+            runtimeProjectedOpen.removeIf(key -> key.world().equals(world.getName()));
+            dryRunProjectedOpen.removeIf(key -> key.world().equals(world.getName()));
         }
     }
 
@@ -226,10 +250,14 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
             task.cancel();
             reconcileTask = null;
         }
+        cancelTransitionWake();
         try {
             restoreAllOverrides(true);
         } catch (Exception exception) {
             plugin.getLogger().severe("Could not restore WorldGuard passthrough state: " + rootMessage(exception));
+        } finally {
+            runtimeProjectedOpen.clear();
+            dryRunProjectedOpen.clear();
         }
     }
 
@@ -267,9 +295,21 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
     private synchronized void reconcile() {
         if (!dynamicModeEnabled()) {
             restoreAllOverrides(true);
+            dryRunPreview.clear();
+            runtimeProjectedOpen.clear();
+            dryRunProjectedOpen.clear();
+            cancelTransitionWake();
             diagnostics = ProviderDiagnostics.simple(configuration.ruleSettings().enabled() ? "overlay" : "disabled");
             return;
         }
+        if (configuration.pluginSettings().diagnostics().dryRun()) {
+            restoreAllOverrides(true);
+            runtimeProjectedOpen.clear();
+            reconcileDryRun();
+            return;
+        }
+        dryRunPreview.clear();
+        dryRunProjectedOpen.clear();
 
         WorldGuardSettings settings = configuration.pluginSettings().worldGuard();
         int managed = 0;
@@ -277,6 +317,7 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
         int grace = 0;
         int protectedCount = 0;
         int skippedPassthrough = 0;
+        Duration nextTransition = null;
         Set<WorldGuardStateStore.RegionKey> discovered = new HashSet<>();
         List<Mutation> mutations = new ArrayList<>();
 
@@ -301,9 +342,14 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
                 managed++;
                 discovered.add(key);
                 ClaimStatus status = states.evaluate(snapshot(world, region));
+                if (status.protectedNow()) runtimeProjectedOpen.remove(key);
+                else runtimeProjectedOpen.add(key);
                 switch (status.state()) {
                     case OPEN -> open++;
-                    case GRACE -> grace++;
+                    case GRACE -> {
+                        grace++;
+                        nextTransition = earlier(nextTransition, status.remaining());
+                    }
                     case PROTECTED -> protectedCount++;
                 }
 
@@ -317,6 +363,7 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
                     mutations.add(new Mutation(manager, key, region, original, desired, restoring));
                 }
             }
+            pruneWorldRegistry(world, manager);
         }
 
         // Write recovery metadata before any temporary WorldGuard mutation. If the
@@ -388,6 +435,8 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
             }
         }
         stateStore.flush();
+        runtimeProjectedOpen.retainAll(discovered);
+        scheduleTransitionWake(nextTransition);
 
         Map<String, String> extra = new HashMap<>();
         if (skippedPassthrough > 0) {
@@ -401,6 +450,109 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
                 protectedCount,
                 extra
         );
+    }
+
+    private void reconcileDryRun() {
+        WorldGuardSettings settings = configuration.pluginSettings().worldGuard();
+        int managed = 0;
+        int open = 0;
+        int grace = 0;
+        int protectedCount = 0;
+        int skippedPassthrough = 0;
+        Duration nextTransition = null;
+        Set<WorldGuardStateStore.RegionKey> discovered = new HashSet<>();
+
+        for (World world : plugin.getServer().getWorlds()) {
+            RegionManager manager = regionManager(world);
+            if (manager == null) continue;
+            for (ProtectedRegion region : manager.getRegions().values()) {
+                if (!selected(world, region, settings)) continue;
+                WorldGuardStateStore.RegionKey key = new WorldGuardStateStore.RegionKey(world.getName(), region.getId());
+                if (!settings.manageExistingPassthroughRegions()
+                        && dynamicOverrideState(region) != StateFlag.State.ALLOW
+                        && region.getFlag(Flags.PASSTHROUGH) == StateFlag.State.ALLOW) {
+                    skippedPassthrough++;
+                    continue;
+                }
+
+                discovered.add(key);
+                managed++;
+                ClaimSnapshot claim = snapshot(world, region);
+                ClaimStatus status = states.evaluate(claim);
+                switch (status.state()) {
+                    case OPEN -> open++;
+                    case GRACE -> {
+                        grace++;
+                        nextTransition = earlier(nextTransition, status.remaining());
+                    }
+                    case PROTECTED -> protectedCount++;
+                }
+                if (status.protectedNow()) dryRunProjectedOpen.remove(key);
+                else dryRunProjectedOpen.add(key);
+
+                StateFlag.State original = region.getFlag(Flags.PASSTHROUGH);
+                StateFlag.State desired = desiredPassthrough(status.protectedNow(), original);
+                String policy = states.effectivePolicy(claim, configuration.ruleSettings()).configValue();
+                String activeDelay = states.effectiveActiveDelay(claim, configuration.ruleSettings()).toString();
+                String inactiveDelay = states.effectiveInactiveDelay(claim, configuration.ruleSettings()).toString();
+                String preview = status.state().name() + ":" + stateName(desired)
+                        + ":active=" + status.effectiveOwners().size()
+                        + ":online=" + status.onlineOwners().size()
+                        + ":policy=" + policy
+                        + ":active-delay=" + activeDelay
+                        + ":inactive-delay=" + inactiveDelay
+                        + (status.raidActive() ? ":RAID" : "");
+                String previous = dryRunPreview.put(key, preview);
+                if (configuration.pluginSettings().diagnostics().logTransitions() && !preview.equals(previous)) {
+                    plugin.getLogger().info("[DRY RUN] WorldGuard region " + key.world() + ":" + key.region()
+                            + " would be " + status.state().name()
+                            + " (passthrough " + stateName(original) + " -> " + stateName(desired)
+                            + ", active owners " + status.effectiveOwners().size() + "/" + status.claim().owners().size()
+                            + ", connected owners " + status.onlineOwners().size()
+                            + ", policy " + policy
+                            + ", active delay " + activeDelay
+                            + ", inactive delay " + inactiveDelay + ")");
+                }
+            }
+            pruneWorldRegistry(world, manager);
+        }
+        dryRunPreview.keySet().retainAll(discovered);
+        dryRunProjectedOpen.retainAll(discovered);
+        scheduleTransitionWake(nextTransition);
+
+        Map<String, String> extra = new HashMap<>();
+        extra.put("dry-run", "true");
+        if (skippedPassthrough > 0) extra.put("skipped-existing-passthrough", String.valueOf(skippedPassthrough));
+        diagnostics = new ProviderDiagnostics("dry-run", managed, open, grace, protectedCount, extra);
+    }
+
+    private Duration earlier(Duration current, Duration candidate) {
+        if (candidate == null || candidate.isZero() || candidate.isNegative()) return current;
+        if (current == null || candidate.compareTo(current) < 0) return candidate;
+        return current;
+    }
+
+    private void scheduleTransitionWake(Duration delay) {
+        cancelTransitionWake();
+        if (delay == null || delay.isZero() || delay.isNegative() || closed.get()) return;
+        long millis = Math.max(1L, delay.toMillis());
+        transitionWakeTask = plugin.getServer().getAsyncScheduler().runDelayed(
+                plugin,
+                ignored -> {
+                    transitionWakeTask = null;
+                    requestReconcile();
+                },
+                millis,
+                TimeUnit.MILLISECONDS
+        );
+    }
+
+    private void cancelTransitionWake() {
+        ScheduledTask task = transitionWakeTask;
+        if (task != null) {
+            task.cancel();
+            transitionWakeTask = null;
+        }
     }
 
     private StateFlag.State desiredPassthrough(boolean protectedNow, StateFlag.State original) {
@@ -596,6 +748,12 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
             return false;
         }
 
+        WorldGuardStateStore.RegionKey key = new WorldGuardStateStore.RegionKey(world.getName(), region.getId());
+        RegionLifecycleClassification classification = regionRegistry.classification(key);
+        if (classification == null) {
+            classification = regionRegistry.classifyRuntime(key, settings.autoManageNewRegions());
+        }
+
         StateFlag.State override = dynamicOverrideState(region);
         if (override == StateFlag.State.DENY) {
             return false;
@@ -603,10 +761,94 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
         if (override == StateFlag.State.ALLOW) {
             return true;
         }
+        if (RegionSelector.matchesAny(world.getName(), region.getId(), settings.excludedRegions())) {
+            return false;
+        }
+        if (settings.manageAllOwnedRegions()) {
+            return true;
+        }
+        if (RegionSelector.matchesAny(world.getName(), region.getId(), settings.includedRegions())) {
+            return true;
+        }
+        return classification == RegionLifecycleClassification.AUTO_DYNAMIC;
+    }
 
-        boolean included = settings.manageAllOwnedRegions()
-                || RegionSelector.matchesAny(world.getName(), region.getId(), settings.includedRegions());
-        return included && !RegionSelector.matchesAny(world.getName(), region.getId(), settings.excludedRegions());
+    private void bootstrapLoadedWorlds() {
+        for (World world : plugin.getServer().getWorlds()) {
+            bootstrapWorldRegistry(world);
+        }
+    }
+
+    private void bootstrapWorldRegistry(World world) {
+        RegionManager manager = regionManager(world);
+        if (manager == null) {
+            return;
+        }
+        Set<WorldGuardStateStore.RegionKey> current = new HashSet<>();
+        for (ProtectedRegion region : manager.getRegions().values()) {
+            if (region.isPhysicalArea() && !region.getId().equalsIgnoreCase("__global__")) {
+                current.add(new WorldGuardStateStore.RegionKey(world.getName(), region.getId()));
+            }
+        }
+        regionRegistry.bootstrapWorld(world.getName(), current);
+    }
+
+    private void pruneWorldRegistry(World world, RegionManager manager) {
+        Set<WorldGuardStateStore.RegionKey> current = new HashSet<>();
+        for (ProtectedRegion region : manager.getRegions().values()) {
+            if (region.isPhysicalArea() && !region.getId().equalsIgnoreCase("__global__")) {
+                current.add(new WorldGuardStateStore.RegionKey(world.getName(), region.getId()));
+            }
+        }
+        regionRegistry.pruneWorld(world.getName(), current);
+    }
+
+    private String managementSource(World world, ProtectedRegion region, WorldGuardSettings settings) {
+        if (!region.isPhysicalArea() || region.getId().equalsIgnoreCase("__global__")) {
+            return "static";
+        }
+        if (effectiveOwners(region).isEmpty()) {
+            return "ownerless";
+        }
+        WorldGuardStateStore.RegionKey key = new WorldGuardStateStore.RegionKey(world.getName(), region.getId());
+        RegionLifecycleClassification classification = regionRegistry.classification(key);
+        if (classification == null) {
+            classification = regionRegistry.classifyRuntime(key, settings.autoManageNewRegions());
+        }
+
+        StateFlag.State override = dynamicOverrideState(region);
+        if (override == StateFlag.State.DENY) {
+            return "manual-deny";
+        }
+        if (override == StateFlag.State.ALLOW) {
+            return "manual-allow";
+        }
+        if (RegionSelector.matchesAny(world.getName(), region.getId(), settings.excludedRegions())) {
+            return "excluded";
+        }
+        if (settings.manageAllOwnedRegions()) {
+            return "manage-all";
+        }
+        if (RegionSelector.matchesAny(world.getName(), region.getId(), settings.includedRegions())) {
+            return "included";
+        }
+        return classification == RegionLifecycleClassification.AUTO_DYNAMIC ? "auto-new" : "legacy-static";
+    }
+
+
+    private String effectiveManagementSource(World world, ProtectedRegion region, WorldGuardSettings settings) {
+        String source = managementSource(world, region, settings);
+        if (source.equals("manual-allow")
+                || !Set.of("manage-all", "included", "auto-new").contains(source)
+                || settings.mode() != WorldGuardSettings.Mode.DYNAMIC_PASSTHROUGH
+                || settings.manageExistingPassthroughRegions()) {
+            return source;
+        }
+        WorldGuardStateStore.RegionKey key = new WorldGuardStateStore.RegionKey(world.getName(), region.getId());
+        if (!stateStore.contains(key) && region.getFlag(Flags.PASSTHROUGH) == StateFlag.State.ALLOW) {
+            return "existing-passthrough";
+        }
+        return source;
     }
 
     private StateFlag.State dynamicOverrideState(ProtectedRegion region) {
@@ -617,13 +859,43 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
     private ClaimSnapshot snapshot(World world, ProtectedRegion region) {
         Set<UUID> owners = effectiveOwners(region);
         Set<UUID> trusted = effectiveTrusted(region);
+        Map<String, String> attributes = new HashMap<>();
+        if (WorldGuardFlags.presencePolicy() != null) {
+            String value = region.getFlag(WorldGuardFlags.presencePolicy());
+            if (value != null && !value.isBlank()) attributes.put("presence-policy", value.trim());
+        }
+        if (WorldGuardFlags.activeDelay() != null) {
+            String value = region.getFlag(WorldGuardFlags.activeDelay());
+            if (value != null && !value.isBlank()) attributes.put("active-delay", value.trim());
+        }
+        String inactiveDelay = null;
+        if (WorldGuardFlags.inactiveDelay() != null) {
+            inactiveDelay = region.getFlag(WorldGuardFlags.inactiveDelay());
+        }
+        if ((inactiveDelay == null || inactiveDelay.isBlank()) && WorldGuardFlags.legacyDelay() != null) {
+            inactiveDelay = region.getFlag(WorldGuardFlags.legacyDelay());
+        }
+        if (inactiveDelay != null && !inactiveDelay.isBlank()) {
+            attributes.put("inactive-delay", inactiveDelay.trim());
+        }
+        attributes.put("management-source", effectiveManagementSource(world, region, configuration.pluginSettings().worldGuard()));
+        WorldGuardStateStore.RegionKey runtimeKey = new WorldGuardStateStore.RegionKey(world.getName(), region.getId());
+        boolean runtimeOpen = configuration.pluginSettings().diagnostics().dryRun()
+                ? dryRunProjectedOpen.contains(runtimeKey)
+                : runtimeProjectedOpen.contains(runtimeKey);
+        attributes.put("runtime-dynamic-open", Boolean.toString(runtimeOpen));
+        if (WorldGuardFlags.raidSessions() != null) {
+            StateFlag.State value = region.getFlag(WorldGuardFlags.raidSessions());
+            if (value != null) attributes.put("raid-sessions", value == StateFlag.State.ALLOW ? "true" : "false");
+        }
         return new ClaimSnapshot(
                 id(),
                 world.getName() + ":" + region.getId(),
                 region.getId(),
                 world.getName(),
                 owners,
-                trusted
+                trusted,
+                attributes
         );
     }
 

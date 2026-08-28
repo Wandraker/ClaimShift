@@ -12,7 +12,9 @@ import dev.onelsey.claimshift.message.MessageService;
 import dev.onelsey.claimshift.metrics.MetricsService;
 import dev.onelsey.claimshift.model.ClaimState;
 import dev.onelsey.claimshift.model.ClaimStatus;
+import dev.onelsey.claimshift.protection.PresenceService;
 import dev.onelsey.claimshift.protection.ProtectionService;
+import dev.onelsey.claimshift.protection.RaidSessionService;
 import dev.onelsey.claimshift.util.DurationFormatter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.Command;
@@ -33,6 +35,8 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
     private final LocaleService locales;
     private final ProviderManager providers;
     private final ProtectionService protection;
+    private final PresenceService presence;
+    private final RaidSessionService raids;
     private final MetricsService metrics;
     private final MessageService messages;
 
@@ -42,6 +46,8 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
             LocaleService locales,
             ProviderManager providers,
             ProtectionService protection,
+            PresenceService presence,
+            RaidSessionService raids,
             MetricsService metrics,
             MessageService messages
     ) {
@@ -50,6 +56,8 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
         this.locales = locales;
         this.providers = providers;
         this.protection = protection;
+        this.presence = presence;
+        this.raids = raids;
         this.metrics = metrics;
         this.messages = messages;
     }
@@ -67,6 +75,7 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
             case "info", "status", "version" -> info(sender);
             case "inspect", "check" -> inspect(sender);
             case "language", "locale" -> language(sender, args);
+            case "dryrun", "dry-run" -> dryRun(sender, args);
             default -> {
                 messages.send(sender, "invalid-command", Map.of("command", Component.text(CommandSyntax.HELP)));
                 yield true;
@@ -83,6 +92,8 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
             messages.send(sender, "reload-failed", Map.of("reason", Component.text(result.error())));
             return true;
         }
+        presence.refreshIntegrations(configuration.ruleSettings().presence());
+        if (configuration.pluginSettings().diagnostics().dryRun()) raids.endAll();
         providers.reload();
         metrics.reconcile();
         messages.send(sender, "reload-success", Map.of(
@@ -126,7 +137,18 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
         sendInfoLine(sender, "info-label-messages-locale", configuration.pluginSettings().messagesLocale());
         sendInfoLine(sender, "info-label-metrics", messages.plain(metrics.enabled() ? "value-enabled" : "value-disabled"));
         sendInfoLine(sender, "info-label-presence-policy", localizedPresencePolicy(configuration.ruleSettings().presencePolicy()));
-        sendInfoLine(sender, "info-label-offline-delay", DurationFormatter.format(configuration.ruleSettings().offlineDelay()));
+        sendInfoLine(sender, "info-label-active-delay", DurationFormatter.format(configuration.ruleSettings().activeDelay()));
+        sendInfoLine(sender, "info-label-inactive-delay", DurationFormatter.format(configuration.ruleSettings().inactiveDelay()));
+        sendInfoLine(sender, "info-label-smart-presence", localizedBoolean(configuration.ruleSettings().presence().smartEnabled()));
+        sendInfoLine(sender, "info-label-pattern-detection", localizedBoolean(configuration.ruleSettings().presence().patternDetectionEnabled()));
+        sendInfoLine(sender, "info-label-external-afk", presence.externalAfkSources().isEmpty()
+                ? messages.plain("value-none")
+                : String.join(", ", presence.externalAfkSources()));
+        sendInfoLine(sender, "info-label-dry-run", localizedBoolean(configuration.pluginSettings().diagnostics().dryRun()));
+        sendInfoLine(sender, "info-label-raids", localizedBoolean(configuration.ruleSettings().raids().enabled()));
+        if (configuration.ruleSettings().raids().enabled()) {
+            sendInfoLine(sender, "info-label-active-raids", String.valueOf(raids.activeCount()));
+        }
 
         if (provider.available() && provider.id().equals("worldguard")) {
             sendInfoLine(sender, "info-label-managed-regions", String.valueOf(diagnostics.managedRegions()));
@@ -166,10 +188,55 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
         sendInfoLine(sender, "inspect-label-state", managed ? localizedState(status.state()) : messages.plain("state-static"));
         sendInfoLine(sender, "inspect-label-owners", String.valueOf(status.claim().owners().size()));
         sendInfoLine(sender, "inspect-label-online-owners", String.valueOf(status.onlineOwners().size()));
+        sendInfoLine(sender, "inspect-label-effective-owners", String.valueOf(status.effectiveOwners().size()));
         sendInfoLine(sender, "inspect-label-managed", localizedBoolean(managed));
+        status.claim().attribute("management-source").ifPresent(source ->
+                sendInfoLine(sender, "inspect-label-management-source", localizedManagementSource(source)));
+        if (managed) {
+            sendInfoLine(sender, "inspect-label-policy", localizedPresencePolicy(protection.effectivePolicy(status.claim())));
+            sendInfoLine(sender, "inspect-label-active-delay", DurationFormatter.format(protection.effectiveActiveDelay(status.claim())));
+            sendInfoLine(sender, "inspect-label-inactive-delay", DurationFormatter.format(protection.effectiveInactiveDelay(status.claim())));
+            sendInfoLine(sender, "inspect-label-raids-enabled", localizedBoolean(protection.raidSessionsEnabled(status.claim())));
+        }
+        sendInfoLine(sender, "inspect-label-raid-active", localizedBoolean(status.raidActive()));
+        if (status.raidActive()) {
+            sendInfoLine(sender, "inspect-label-raid-remaining", DurationFormatter.format(status.raidRemaining()));
+        }
         if (managed && status.state() == ClaimState.GRACE) {
             sendInfoLine(sender, "inspect-label-remaining", DurationFormatter.format(status.remaining()));
         }
+        return true;
+    }
+
+    private boolean dryRun(CommandSender sender, String[] args) {
+        if (!hasPermission(sender, "claimshift.dryrun")) return true;
+        if (args.length < 2 || args[1].equalsIgnoreCase("status")) {
+            messages.send(sender, "dry-run-status", Map.of(
+                    "state", messages.render(configuration.pluginSettings().diagnostics().dryRun() ? "value-enabled" : "value-disabled", Map.of()),
+                    "command", Component.text(CommandSyntax.DRY_RUN_OFF),
+                    "inspect-command", Component.text(CommandSyntax.INSPECT)
+            ));
+            return true;
+        }
+
+        boolean enabled;
+        if (args[1].equalsIgnoreCase("on")) enabled = true;
+        else if (args[1].equalsIgnoreCase("off")) enabled = false;
+        else {
+            messages.send(sender, "dry-run-usage", Map.of("command", Component.text(CommandSyntax.DRY_RUN)));
+            return true;
+        }
+
+        ReloadResult result = configuration.setDryRun(enabled);
+        if (!result.success()) {
+            messages.send(sender, "dry-run-failed", Map.of("reason", Component.text(result.error())));
+            return true;
+        }
+        if (enabled) raids.endAll();
+        providers.reload();
+        messages.send(sender, enabled ? "dry-run-enabled" : "dry-run-disabled", Map.of(
+                "command", Component.text(CommandSyntax.DRY_RUN_OFF)
+        ));
         return true;
     }
 
@@ -241,6 +308,9 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
         if (sender.hasPermission("claimshift.language")) {
             sendHelpLine(sender, CommandSyntax.LANGUAGE, "help-language-description");
         }
+        if (sender.hasPermission("claimshift.dryrun")) {
+            sendHelpLine(sender, CommandSyntax.DRY_RUN, "help-dry-run-description");
+        }
     }
 
     private String localizedState(ClaimState state) {
@@ -261,11 +331,28 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
         return messages.plain(value ? "value-yes" : "value-no");
     }
 
+    private String localizedManagementSource(String source) {
+        String key = switch (source) {
+            case "manual-allow" -> "management-source-manual-allow";
+            case "manual-deny" -> "management-source-manual-deny";
+            case "excluded" -> "management-source-excluded";
+            case "included" -> "management-source-included";
+            case "manage-all" -> "management-source-manage-all";
+            case "auto-new" -> "management-source-auto-new";
+            case "legacy-static" -> "management-source-legacy-static";
+            case "existing-passthrough" -> "management-source-existing-passthrough";
+            case "ownerless" -> "management-source-ownerless";
+            default -> "management-source-static";
+        };
+        return messages.plain(key);
+    }
+
     private String localizedProviderMode(String mode) {
         return messages.plain(switch (mode) {
             case "dynamic-passthrough" -> "provider-mode-dynamic-passthrough";
             case "overlay" -> "provider-mode-overlay";
             case "disabled" -> "provider-mode-disabled";
+            case "dry-run" -> "provider-mode-dry-run";
             case "starting" -> "provider-mode-starting";
             case "inactive" -> "provider-mode-inactive";
             default -> "provider-mode-unknown";
@@ -311,6 +398,7 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
             if (sender.hasPermission("claimshift.sync")) values.add("sync");
             if (sender.hasPermission("claimshift.reload")) values.add("reload");
             if (sender.hasPermission("claimshift.language")) values.add("language");
+            if (sender.hasPermission("claimshift.dryrun")) values.add("dryrun");
             return filter(values, args[0]);
         }
         if (args.length == 2 && isLanguageCommand(args[0])) {
@@ -318,6 +406,9 @@ public final class ClaimShiftCommand implements CommandExecutor, TabCompleter {
         }
         if (args.length == 3 && isLanguageCommand(args[0])) {
             return filter(CommandSyntax.SCOPES, args[2]);
+        }
+        if (args.length == 2 && (args[0].equalsIgnoreCase("dryrun") || args[0].equalsIgnoreCase("dry-run"))) {
+            return filter(List.of("on", "off", "status"), args[1]);
         }
         return List.of();
     }

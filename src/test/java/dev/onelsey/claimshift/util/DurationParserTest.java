@@ -15,6 +15,8 @@ class DurationParserTest {
         assertEquals(Duration.ofMinutes(1), DurationParser.parse("1m"));
         assertEquals(Duration.ofHours(2), DurationParser.parse("2h"));
         assertEquals(Duration.ofDays(3), DurationParser.parse("3d"));
+        assertEquals(Duration.ZERO, DurationParser.parse("0"));
+        assertEquals(Duration.ZERO, DurationParser.parse("0s"));
     }
 
     @Test

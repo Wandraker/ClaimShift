@@ -17,6 +17,10 @@ integration:
     - 'Safe default is false: existing WorldGuard regions are not dynamically changed until an administrator opts them in.'
     - Set true to manage every physical non-global region with an effective player owner; keep spawn/shop/event regions static with claimshift-dynamic deny or exclusions.
     - Ownerless administrative regions are ignored. Inherited player owners from parent regions are included.
+    auto-manage-new-regions:
+    - Automatically manage eligible WorldGuard regions first created while ClaimShift is running.
+    - Existing regions are recorded as legacy/static when ClaimShift first sees a world, so installing the plugin never converts old claims automatically.
+    - New regions can still be forced static with claimshift-dynamic deny or excluded-regions.
     manage-existing-passthrough-regions:
     - If false, regions that already had passthrough ALLOW before ClaimShift are left alone.
     included-regions:
@@ -32,7 +36,15 @@ integration:
 metrics:
   enabled:
   - Enable anonymous bStats metrics for ClaimShift.
-  - Standard bStats statistics plus ClaimShift presence-policy, provider, WorldGuard mode and message-locale charts are submitted.
+  - Standard bStats statistics plus coarse ClaimShift charts for presence policy, provider, WorldGuard mode, message locale, Smart Presence, pattern detection and the global raid-session switch are submitted.
+  - ClaimShift custom charts never include player identifiers, claim names or server addresses.
   - The server-wide bStats opt-out in plugins/bStats/config.yml is always respected.
 debug:
 - Enable additional ClaimShift diagnostics in the server console.
+diagnostics:
+  dry-run:
+  - First-install safety mode. While enabled, ClaimShift previews decisions but does not change WorldGuard state or deny actions.
+  log-transitions:
+  - Log dry-run state changes to the console. Repeated identical previews are suppressed.
+  operator-notice:
+  - Show operators a title/chat notice while dry-run is enabled.

@@ -31,7 +31,8 @@ messages:
   info-label-messages-locale: Langue des messages
   info-label-metrics: Statistiques anonymes
   info-label-presence-policy: Politique de présence
-  info-label-offline-delay: Délai de transition hors ligne
+  info-label-active-delay: Délai après le retour d’un propriétaire actif
+  info-label-inactive-delay: Délai après l’absence de propriétaire actif
   info-label-managed-regions: Régions gérées
   info-label-open-regions: Régions ouvertes
   info-label-grace-regions: Régions en attente
@@ -43,8 +44,8 @@ messages:
   inspect-label-id: ID
   inspect-label-provider: Fournisseur
   inspect-label-state: État
-  inspect-label-owners: Propriétaires effectifs
-  inspect-label-online-owners: Propriétaires en ligne
+  inspect-label-owners: Propriétaires
+  inspect-label-online-owners: Propriétaires connectés
   inspect-label-managed: Accès dynamique
   inspect-label-remaining: Transition dans
   scope-config: Commentaires de configuration
@@ -59,11 +60,47 @@ messages:
   state-grace: ATTENTE
   state-protected: PROTÉGÉ
   state-static: STATIQUE / NON GÉRÉ
-  presence-policy-online-open: Propriétaire en ligne = OUVERT
-  presence-policy-offline-open: Propriétaire hors ligne = OUVERT
+  presence-policy-online-open: Propriétaire actif = OPEN
+  presence-policy-offline-open: Aucun propriétaire actif = OPEN
   provider-mode-dynamic-passthrough: passthrough dynamique
   provider-mode-overlay: Overlay
   provider-mode-disabled: Désactivé
   provider-mode-starting: Démarrage
   provider-mode-inactive: Inactif
   provider-mode-unknown: Inconnu
+  dry-run-title: <warning><bold>ClaimShift MODE TEST</bold></warning>
+  dry-run-subtitle: <muted>Aperçu uniquement — désactiver avec <white><command></white></muted>
+  dry-run-notice: '<prefix> <warning>Le mode de diagnostic dry-run est actif.</warning> <muted>ClaimShift ne modifie pas les régions et ne bloque aucune action. Désactiver : <white><command></white></muted>'
+  dry-run-status: '<prefix> <muted>Dry-run : <white><state></white>. Désactiver : <white><command></white></muted>'
+  dry-run-enabled: '<prefix> <warning>Dry-run activé.</warning> <muted>ClaimShift fonctionne uniquement en aperçu. Désactiver : <white><command></white>.</muted>'
+  dry-run-disabled: <prefix> <success>Dry-run désactivé.</success> <muted>ClaimShift peut maintenant appliquer les états configurés.</muted>
+  dry-run-failed: <prefix> <error>Impossible de modifier le mode dry-run.</error> <muted><reason></muted>
+  dry-run-usage: '<prefix> <warning>Utilisation : <white><command></white></warning>'
+  help-dry-run-description: Activer, désactiver ou vérifier le diagnostic sécurisé dry-run.
+  info-label-smart-presence: Présence intelligente
+  info-label-pattern-detection: Détection de motifs
+  info-label-dry-run: Diagnostic dry-run
+  info-label-raids: Sessions de raid
+  info-label-active-raids: Sessions de raid actives
+  inspect-label-effective-owners: Propriétaires actifs
+  inspect-label-raid-active: Session de raid active
+  inspect-label-raid-remaining: Temps de raid restant
+  raid-started-owner: '<prefix> <warning>Votre région <white><claim></white> est en cours de raid.</warning> <muted>Le verrou de raid reste actif tant que l’activité continue (fenêtre actuelle : <white><remaining></white>).</muted>'
+  raid-ended-owner: <prefix> <success>Session de raid terminée pour <white><claim></white>.</success>
+  inspect-label-policy: Politique effective
+  inspect-label-active-delay: Délai de transition avec propriétaire actif
+  inspect-label-inactive-delay: Délai de transition sans propriétaire actif
+  inspect-label-raids-enabled: Sessions de raid autorisées
+  inspect-label-management-source: Source de gestion
+  management-source-manual-allow: Activé manuellement via claimshift-dynamic allow
+  management-source-manual-deny: Désactivé manuellement via claimshift-dynamic deny
+  management-source-excluded: Exclu par la configuration
+  management-source-included: Inclus par la configuration
+  management-source-manage-all: manage-all-owned-regions
+  management-source-auto-new: Dynamique automatiquement (créé après ClaimShift)
+  management-source-legacy-static: Ancien/statique (existait avant ClaimShift)
+  management-source-existing-passthrough: Le passthrough ALLOW existant est conservé
+  management-source-ownerless: Région statique sans propriétaire
+  management-source-static: Statique / non géré
+  provider-mode-dry-run: Aperçu dry-run
+  info-label-external-afk: Sources AFK externes

@@ -8,6 +8,8 @@ folia-supported: true
 softdepend:
   - WorldGuard
   - Lands
+  - CMI
+  - Essentials
 commands:
   claimshift:
     description: Main ClaimShift command.
@@ -23,6 +25,7 @@ permissions:
       claimshift.info: true
       claimshift.inspect: true
       claimshift.language: true
+      claimshift.dryrun: true
   claimshift.reload:
     description: Safely reloads ClaimShift configuration.
     default: op
@@ -37,6 +40,9 @@ permissions:
     default: op
   claimshift.language:
     description: Changes ClaimShift configuration or message locale.
+    default: op
+  claimshift.dryrun:
+    description: Enables, disables, or inspects ClaimShift dry-run diagnostics.
     default: op
   claimshift.bypass:
     description: Bypasses ClaimShift active protection checks.

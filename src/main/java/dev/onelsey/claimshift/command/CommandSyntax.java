@@ -14,6 +14,8 @@ public final class CommandSyntax {
     public static final String SYNC = ROOT + " sync";
     public static final String RELOAD = ROOT + " reload";
     public static final String LANGUAGE = ROOT + " language <locale> [config|messages|both]";
+    public static final String DRY_RUN = ROOT + " dryrun <on|off|status>";
+    public static final String DRY_RUN_OFF = ROOT + " dryrun off";
     public static final List<String> SCOPES = List.of("config", "messages", "both");
 
     private CommandSyntax() {

@@ -17,24 +17,26 @@ ClaimShift supports two presence policies:
 ### `online-open`
 
 ```text
-owner online        -> OPEN
-last owner leaves   -> GRACE
-delay expires       -> PROTECTED
+active owner present       -> OPEN
+last active owner is lost  -> GRACE
+delay expires              -> PROTECTED
 ```
 
-Useful for servers that want to prevent offline raiding while still allowing players to defend their bases while they are online.
+Useful for servers that want to prevent offline/AFK raiding while still allowing players to defend their bases while they are actively present.
 
 ### `offline-open`
 
 ```text
-owner online        -> PROTECTED
-last owner leaves   -> GRACE
-delay expires       -> OPEN
+active owner present       -> PROTECTED
+last active owner is lost  -> GRACE
+delay expires              -> OPEN
 ```
 
-Useful for servers where claims should become raidable after their owners have been offline for a configured period.
+Useful for servers where claims should become raidable after their owners stop being actively present for a configured period.
 
-The delay is configurable.
+Both transition directions have independent delays. Fresh installations default to `offline-open`: a claim stays protected for one hour after the last active owner disappears, and protection takes five minutes to return after an active owner comes back to a claim that is already OPEN. Either delay can be disabled with `0` or `0s`.
+
+With Smart Presence enabled, an owner may stop counting as active because of AFK/idle detection even while the account remains connected.
 
 ## WorldGuard
 
@@ -58,7 +60,7 @@ Or explicitly kept static:
 
 This is useful for spawn, shops, event areas, staff regions and other administrative zones that should always keep their normal WorldGuard behavior.
 
-Fresh installations use an opt-in approach by default, so existing regions are not automatically converted into dynamic claims.
+Regions that already exist when ClaimShift first observes a loaded world are recorded as legacy/static and keep their normal WorldGuard behavior. Eligible player-owned regions first created while ClaimShift is running are automatically managed by default. Older regions can still be enabled explicitly with `claimshift-dynamic allow`, and any region can be forced static with `claimshift-dynamic deny`.
 
 ## Region selection
 
@@ -73,15 +75,16 @@ integration:
   worldguard:
     mode: dynamic-passthrough
     manage-all-owned-regions: false
+    auto-manage-new-regions: true
     manage-existing-passthrough-regions: false
     included-regions: []
     excluded-regions:
       - __global__
 ```
 
-If most owned regions on a server are player claims, `manage-all-owned-regions` can be enabled and administrative regions can be excluded individually or by pattern.
+`auto-manage-new-regions` lets ClaimShift distinguish migration safety from normal day-to-day use: old regions stay static, while newly created eligible player claims become dynamic automatically. If most existing owned regions should also become dynamic, `manage-all-owned-regions` can be enabled and administrative regions can be excluded individually or by pattern.
 
-Per-region `claimshift-dynamic allow` / `deny` flags take priority over general selection rules.
+Per-region `claimshift-dynamic allow` / `deny` flags take priority over automatic lifecycle classification and general selection rules.
 
 Ownerless administrative regions are not dynamically managed.
 
@@ -111,8 +114,10 @@ Example:
 ```yaml
 protection:
   enabled: true
-  presence-policy: online-open
-  offline-delay: 10m
+  presence-policy: offline-open
+  transition-delays:
+    owner-active: 5m
+    owner-inactive: 1h
   protect-unknown-offline-owners: true
   trusted-players-bypass: true
 ```
@@ -123,11 +128,74 @@ For automation such as pistons, fluids, fire and hoppers, ClaimShift tries to pr
 
 ## Multiple owners
 
-Claims with multiple effective owners are supported.
+Claims with multiple owners are supported.
 
-The offline transition starts only after the last effective owner leaves. If at least one effective owner remains online, the claim stays in the policy's online state.
+The offline transition starts only after the last **active** owner stops counting as present. A connected owner can become inactive through Smart Presence without actually disconnecting. If at least one active owner remains, the claim stays in the policy's online state.
 
 WorldGuard ownership inheritance is taken into account where applicable.
+
+## Smart Presence and AFK abuse
+
+A connected account does not have to count as active forever. Smart Presence is enabled by default and can stop simple AFK machines or periodic keep-alive binds from holding a claim in its online state indefinitely.
+
+It uses several coarse signals:
+
+- idle time since meaningful player activity
+- meaningful movement distance instead of tiny position jitter or camera movement
+- repeated low-frequency activity patterns, such as the same action every few minutes
+- optional AFK state from CMI and EssentialsX when either plugin is installed
+
+Suspicious periodic activity is not treated as cheating and ClaimShift does not punish the player. That activity simply stops refreshing the active-presence timer. Normal gameplay activity can immediately make the owner active again.
+
+Optional stronger controls are available but disabled by default:
+
+- anti-relog qualification after quick reconnects
+- maximum continuous presence time
+
+ClaimShift is not a full bot detector. A sufficiently sophisticated automation system may still resemble real gameplay, so server anti-cheat and server rules remain separate layers.
+
+## Raid sessions
+
+Raid sessions are optional and disabled by default. When enabled, qualifying activity against a claim that is already OPEN can create a temporary raid lock. The lock keeps the claim open while the raid is active so protection cannot suddenly return in the middle of an ongoing attack.
+
+A raid session has:
+
+- an inactivity timeout
+- an optional hard maximum duration
+- optional extension when qualifying activity continues
+- configurable trigger action types
+- owner notifications when the session starts or ends
+
+WorldGuard regions can override the global raid setting individually.
+
+```text
+/rg flag <region> claimshift-raids allow
+/rg flag <region> claimshift-raids deny
+```
+
+Presence policy and both transition delays can also be overridden per WorldGuard region:
+
+```text
+/rg flag <region> claimshift-policy offline-open
+/rg flag <region> claimshift-active-delay 5m
+/rg flag <region> claimshift-inactive-delay 1h
+```
+
+The older `claimshift-delay` flag remains accepted as a compatibility alias for the inactive-owner delay.
+
+## First-install dry-run
+
+A brand-new ClaimShift installation starts in **dry-run mode**. This is a safety preview: ClaimShift calculates which regions would be OPEN, GRACE or PROTECTED, but it does not change WorldGuard state and does not deny player/system actions.
+
+Operators with the diagnostics permission receive a title/chat reminder while dry-run is enabled. When the configuration looks correct, disable it with:
+
+```text
+/claimshift dryrun off
+```
+
+Upgrading an existing ClaimShift installation does **not** automatically enable dry-run. If an administrator enables it later, the reminder returns until it is disabled again.
+
+Dry-run transitions can be logged to the console without exposing player names or region contents.
 
 ## Runtime safety
 
@@ -201,6 +269,7 @@ HEX colors, prefix formatting and message overrides can be customized.
 /claimshift sync
 /claimshift reload
 /claimshift language <locale> [config|messages|both]
+/claimshift dryrun <on|off|status>
 ```
 
 Alias:
@@ -215,6 +284,7 @@ Useful commands for testing and administration:
 - `/claimshift inspect` — inspects the ClaimShift state at your current location
 - `/claimshift sync` — requests immediate provider reconciliation
 - `/claimshift reload` — safely validates and reloads configuration
+- `/claimshift dryrun` — checks or changes the safe diagnostics preview mode
 
 ## Permissions
 
@@ -224,6 +294,7 @@ Useful commands for testing and administration:
 - `claimshift.info`
 - `claimshift.inspect`
 - `claimshift.language`
+- `claimshift.dryrun`
 - `claimshift.bypass`
 
 `claimshift.admin` intentionally does **not** grant `claimshift.bypass`, allowing administrators to test ClaimShift protection without silently bypassing it.
@@ -239,6 +310,9 @@ The integration reports the normal bStats platform/plugin statistics plus a smal
 - active claim provider
 - WorldGuard integration mode
 - selected message locale
+- Smart Presence state
+- periodic-pattern detection state
+- global raid-session state
 
 ClaimShift does not add usernames, player UUIDs, region names or server addresses to its custom charts.
 
@@ -331,8 +405,9 @@ The general runtime flow is:
 ```text
 Claim provider
     -> ClaimSnapshot
-    -> PresenceService
+    -> PresenceService / Smart Presence
     -> ClaimStateService
+    -> optional RaidSessionService
     -> ProtectionService
     -> provider reconciliation / event protection
 ```

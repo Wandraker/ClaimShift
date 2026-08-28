@@ -6,6 +6,7 @@ import java.util.Set;
 public record WorldGuardSettings(
         Mode mode,
         boolean manageAllOwnedRegions,
+        boolean autoManageNewRegions,
         boolean manageExistingPassthroughRegions,
         Set<String> includedRegions,
         Set<String> excludedRegions,

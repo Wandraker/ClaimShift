@@ -1,7 +1,7 @@
-
 package dev.onelsey.claimshift.protection;
 
 import dev.onelsey.claimshift.config.ConfigurationService;
+import dev.onelsey.claimshift.config.PresencePolicy;
 import dev.onelsey.claimshift.config.RuleSettings;
 import dev.onelsey.claimshift.integration.ClaimProvider;
 import dev.onelsey.claimshift.integration.ProviderManager;
@@ -12,6 +12,7 @@ import dev.onelsey.claimshift.model.ProtectionDecision;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+import java.time.Duration;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -21,11 +22,18 @@ public final class ProtectionService {
     private final ConfigurationService configuration;
     private final ProviderManager providers;
     private final ClaimStateService states;
+    private final RaidSessionService raids;
 
-    public ProtectionService(ConfigurationService configuration, ProviderManager providers, ClaimStateService states) {
+    public ProtectionService(
+            ConfigurationService configuration,
+            ProviderManager providers,
+            ClaimStateService states,
+            RaidSessionService raids
+    ) {
         this.configuration = configuration;
         this.providers = providers;
         this.states = states;
+        this.raids = raids;
     }
 
     public ProtectionDecision check(Player actor, Location location, ProtectionAction action) {
@@ -42,14 +50,26 @@ public final class ProtectionService {
             return ProtectionDecision.allow(action);
         }
 
+        boolean dryRun = configuration.pluginSettings().diagnostics().dryRun();
         List<ClaimSnapshot> claims = provider.findClaims(location);
         for (ClaimSnapshot claim : claims) {
-            if (actor != null && rules.trustedPlayersBypass() && claim.isTrusted(actor.getUniqueId())) {
+            boolean trusted = actor != null && claim.isTrusted(actor.getUniqueId());
+            if (trusted && rules.trustedPlayersBypass()) {
                 continue;
             }
             ClaimStatus status = states.evaluate(claim);
             if (status.protectedNow()) {
-                return ProtectionDecision.deny(claim, action);
+                if (!dryRun) {
+                    return ProtectionDecision.deny(claim, action);
+                }
+                continue;
+            }
+
+            if (!dryRun && actor != null && !trusted && provider.isDynamicallyManaged(claim)) {
+                RaidSessionService.Update update = raids.recordOpenClaimActivity(claim, action);
+                if (update.active() && update.nextExpiry().isPositive()) {
+                    providers.requestReconcileAfter(update.nextExpiry());
+                }
             }
         }
         return ProtectionDecision.allow(action);
@@ -69,7 +89,7 @@ public final class ProtectionService {
 
     public Set<String> protectedClaimKeys(Location location, ProtectionAction action) {
         RuleSettings rules = configuration.ruleSettings();
-        if (!rules.protects(action)) {
+        if (!rules.protects(action) || configuration.pluginSettings().diagnostics().dryRun()) {
             return Set.of();
         }
         ClaimProvider provider = providers.active();
@@ -105,5 +125,26 @@ public final class ProtectionService {
     public int claimCount(Location location) {
         ClaimProvider provider = providers.active();
         return provider.available() ? provider.findClaims(location).size() : 0;
+    }
+
+    public PresencePolicy effectivePolicy(ClaimSnapshot claim) {
+        return states.effectivePolicy(claim, configuration.ruleSettings());
+    }
+
+    public Duration effectiveActiveDelay(ClaimSnapshot claim) {
+        return states.effectiveActiveDelay(claim, configuration.ruleSettings());
+    }
+
+    public Duration effectiveInactiveDelay(ClaimSnapshot claim) {
+        return states.effectiveInactiveDelay(claim, configuration.ruleSettings());
+    }
+
+    /** Compatibility accessor for the old one-way delay name. */
+    public Duration effectiveDelay(ClaimSnapshot claim) {
+        return effectiveInactiveDelay(claim);
+    }
+
+    public boolean raidSessionsEnabled(ClaimSnapshot claim) {
+        return raids.enabledFor(claim, configuration.ruleSettings().raids());
     }
 }

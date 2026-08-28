@@ -31,7 +31,8 @@ messages:
   info-label-messages-locale: Язык сообщений
   info-label-metrics: Анонимная статистика
   info-label-presence-policy: Политика присутствия
-  info-label-offline-delay: Задержка офлайн-перехода
+  info-label-active-delay: Задержка после появления активного владельца
+  info-label-inactive-delay: Задержка после исчезновения активных владельцев
   info-label-managed-regions: Управляемые регионы
   info-label-open-regions: Открытые регионы
   info-label-grace-regions: Регионы в ожидании
@@ -43,7 +44,7 @@ messages:
   inspect-label-id: ID
   inspect-label-provider: Система
   inspect-label-state: Состояние
-  inspect-label-owners: Эффективные владельцы
+  inspect-label-owners: Владельцы
   inspect-label-online-owners: Владельцы онлайн
   inspect-label-managed: Динамический доступ
   inspect-label-remaining: Переход через
@@ -59,11 +60,47 @@ messages:
   state-grace: ОЖИДАНИЕ
   state-protected: ЗАЩИЩЁН
   state-static: СТАТИЧНЫЙ / НЕ УПРАВЛЯЕТСЯ
-  presence-policy-online-open: Владелец онлайн = ОТКРЫТ
-  presence-policy-offline-open: Владелец офлайн = ОТКРЫТ
+  presence-policy-online-open: Активный владелец = ОТКРЫТ
+  presence-policy-offline-open: Нет активных владельцев = ОТКРЫТ
   provider-mode-dynamic-passthrough: Динамический passthrough
   provider-mode-overlay: Накладная защита
   provider-mode-disabled: Отключён
   provider-mode-starting: Запуск
   provider-mode-inactive: Неактивен
   provider-mode-unknown: Неизвестно
+  dry-run-title: '<warning><bold>ClaimShift: БЕЗОПАСНАЯ НАСТРОЙКА</bold></warning>'
+  dry-run-subtitle: '<muted>Только предпросмотр — сначала проверьте приват игрока</muted>'
+  dry-run-notice: '<prefix> <warning>Включён безопасный режим dry-run.</warning> <muted>WorldGuard продолжает защищать регионы как обычно, а ClaimShift только показывает, что он сделал бы. Встаньте в приват игрока и выполните <white><inspect-command></white>. Если всё правильно — включите реальную работу командой <white><command></white>.</muted>'
+  dry-run-status: '<prefix> <muted>Dry-run: <white><state></white>. WorldGuard работает как обычно, ClaimShift только показывает решения. Проверка: <white><inspect-command></white>. Завершить настройку: <white><command></white>.</muted>'
+  dry-run-enabled: '<prefix> <warning>Dry-run включён.</warning> <muted>ClaimShift работает только в режиме предварительного просмотра. Отключить: <white><command></white>.</muted>'
+  dry-run-disabled: <prefix> <success>Dry-run отключён.</success> <muted>ClaimShift теперь может применять настроенные состояния регионов.</muted>
+  dry-run-failed: <prefix> <error>Не удалось изменить режим dry-run.</error> <muted><reason></muted>
+  dry-run-usage: '<prefix> <warning>Использование: <white><command></white></warning>'
+  help-dry-run-description: Включить, отключить или проверить безопасный режим диагностики dry-run.
+  info-label-smart-presence: Умное присутствие
+  info-label-pattern-detection: Поиск повторяющихся паттернов
+  info-label-dry-run: Диагностика dry-run
+  info-label-raids: Рейд-сессии
+  info-label-active-raids: Активные рейд-сессии
+  inspect-label-effective-owners: Активные владельцы
+  inspect-label-raid-active: Рейд-сессия активна
+  inspect-label-raid-remaining: До конца рейд-сессии
+  raid-started-owner: '<prefix> <warning>На ваш регион <white><claim></white> начался рейд.</warning> <muted>Рейд-блокировка действует, пока продолжается подходящая активность (текущее окно: <white><remaining></white>).</muted>'
+  raid-ended-owner: <prefix> <success>Рейд-сессия региона <white><claim></white> завершена.</success>
+  inspect-label-policy: Итоговая политика региона
+  inspect-label-active-delay: Задержка после появления активного владельца
+  inspect-label-inactive-delay: Задержка после исчезновения активных владельцев
+  inspect-label-raids-enabled: Рейд-сессии разрешены
+  inspect-label-management-source: Источник управления
+  management-source-manual-allow: Включён вручную через claimshift-dynamic allow
+  management-source-manual-deny: Отключён вручную через claimshift-dynamic deny
+  management-source-excluded: Исключён настройками
+  management-source-included: Включён настройками
+  management-source-manage-all: manage-all-owned-regions
+  management-source-auto-new: Автоматически динамический (создан после установки ClaimShift)
+  management-source-legacy-static: Старый/статичный (существовал до ClaimShift)
+  management-source-existing-passthrough: Сохранён существующий passthrough ALLOW
+  management-source-ownerless: Статичный регион без владельцев
+  management-source-static: Статичный / не управляется
+  provider-mode-dry-run: Предпросмотр dry-run
+  info-label-external-afk: Внешние источники AFK

@@ -31,7 +31,8 @@ messages:
   info-label-messages-locale: 消息语言
   info-label-metrics: 匿名统计
   info-label-presence-policy: 在线策略
-  info-label-offline-delay: 离线切换延迟
+  info-label-active-delay: 活跃所有者出现后的延迟
+  info-label-inactive-delay: 无活跃所有者后的延迟
   info-label-managed-regions: 受管理区域
   info-label-open-regions: 开放区域
   info-label-grace-regions: 等待切换区域
@@ -43,7 +44,7 @@ messages:
   inspect-label-id: ID
   inspect-label-provider: 系统
   inspect-label-state: 状态
-  inspect-label-owners: 有效所有者
+  inspect-label-owners: 所有者
   inspect-label-online-owners: 在线所有者
   inspect-label-managed: 动态访问
   inspect-label-remaining: 切换倒计时
@@ -59,11 +60,47 @@ messages:
   state-grace: 等待
   state-protected: 受保护
   state-static: 静态 / 未管理
-  presence-policy-online-open: 所有者在线 = 开放
-  presence-policy-offline-open: 所有者离线 = 开放
+  presence-policy-online-open: 存在活跃所有者 = OPEN
+  presence-policy-offline-open: 无活跃所有者 = OPEN
   provider-mode-dynamic-passthrough: 动态 passthrough
   provider-mode-overlay: 覆盖保护
   provider-mode-disabled: 已禁用
   provider-mode-starting: 启动中
   provider-mode-inactive: 未激活
   provider-mode-unknown: 未知
+  dry-run-title: <warning><bold>ClaimShift 诊断模式</bold></warning>
+  dry-run-subtitle: <muted>仅预览 — 使用 <white><command></white> 关闭</muted>
+  dry-run-notice: <prefix> <warning>Dry-run 诊断模式已启用。</warning> <muted>ClaimShift 不会修改区域状态，也不会拦截操作。准备好后使用 <white><command></white> 关闭。</muted>
+  dry-run-status: <prefix> <muted>Dry-run：<white><state></white>。关闭命令：<white><command></white></muted>
+  dry-run-enabled: <prefix> <warning>Dry-run 已启用。</warning> <muted>ClaimShift 现在仅进行预览。使用 <white><command></white> 关闭。</muted>
+  dry-run-disabled: <prefix> <success>Dry-run 已关闭。</success> <muted>ClaimShift 现在可以应用已配置的区域状态。</muted>
+  dry-run-failed: <prefix> <error>无法更改 dry-run 模式。</error> <muted><reason></muted>
+  dry-run-usage: <prefix> <warning>用法：<white><command></white></warning>
+  help-dry-run-description: 启用、关闭或查看安全的 dry-run 诊断模式。
+  info-label-smart-presence: 智能在线判定
+  info-label-pattern-detection: 行为模式检测
+  info-label-dry-run: Dry-run 诊断
+  info-label-raids: 突袭会话
+  info-label-active-raids: 活动突袭会话
+  inspect-label-effective-owners: 活跃所有者
+  inspect-label-raid-active: 突袭会话活动中
+  inspect-label-raid-remaining: 突袭剩余时间
+  raid-started-owner: <prefix> <warning>你的区域 <white><claim></white> 正在遭受突袭。</warning> <muted>只要有效突袭活动持续，突袭锁就会保持（当前窗口：<white><remaining></white>）。</muted>
+  raid-ended-owner: <prefix> <success>区域 <white><claim></white> 的突袭会话已结束。</success>
+  inspect-label-policy: 实际策略
+  inspect-label-active-delay: 活跃所有者状态切换延迟
+  inspect-label-inactive-delay: 无活跃所有者状态切换延迟
+  inspect-label-raids-enabled: 允许突袭会话
+  inspect-label-management-source: 管理来源
+  management-source-manual-allow: 通过 claimshift-dynamic allow 手动启用
+  management-source-manual-deny: 通过 claimshift-dynamic deny 手动禁用
+  management-source-excluded: 被配置排除
+  management-source-included: 被配置包含
+  management-source-manage-all: manage-all-owned-regions
+  management-source-auto-new: 自动动态管理（在安装 ClaimShift 后创建）
+  management-source-legacy-static: 旧/静态区域（在 ClaimShift 前已存在）
+  management-source-existing-passthrough: 保留已有的 passthrough ALLOW
+  management-source-ownerless: 无所有者的静态区域
+  management-source-static: 静态 / 未管理
+  provider-mode-dry-run: Dry-run 预览
+  info-label-external-afk: 外部 AFK 来源

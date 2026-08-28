@@ -13,7 +13,7 @@ public final class MessageValidator {
     private static final MiniMessage STRICT = MiniMessage.builder().strict(true).build();
     private static final Set<String> PLACEHOLDERS = Set.of(
             "claim", "action", "remaining", "duration", "reason", "scope", "locale",
-            "version", "command", "description", "key", "value", "provider", "locales", "scopes"
+            "version", "command", "inspect-command", "description", "key", "value", "provider", "locales", "scopes", "state"
     );
 
     private MessageValidator() {

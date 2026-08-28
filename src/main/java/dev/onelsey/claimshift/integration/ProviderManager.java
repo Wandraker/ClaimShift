@@ -18,12 +18,14 @@ public final class ProviderManager {
     private final ConfigurationService configuration;
     private final ClaimStateService states;
     private final AtomicBoolean reloadQueued = new AtomicBoolean();
+    private final WorldGuardRegionRegistry worldGuardRegionRegistry;
     private volatile ClaimProvider active = new NoopClaimProvider();
 
     public ProviderManager(ClaimShiftPlugin plugin, ConfigurationService configuration, ClaimStateService states) {
         this.plugin = plugin;
         this.configuration = configuration;
         this.states = states;
+        this.worldGuardRegionRegistry = new WorldGuardRegionRegistry(plugin);
     }
 
     public void start() {
@@ -115,7 +117,7 @@ public final class ProviderManager {
 
         try {
             if (id.equals("worldguard")) {
-                return new WorldGuardClaimProvider(plugin, configuration, states);
+                return new WorldGuardClaimProvider(plugin, configuration, states, worldGuardRegionRegistry);
             }
             if (id.equals("lands")) {
                 return new LandsClaimProvider(plugin);

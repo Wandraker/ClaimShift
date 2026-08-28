@@ -1,4 +1,4 @@
-config-version: 1
+config-version: 3
 
 language:
   config: en_US
@@ -10,6 +10,7 @@ integration:
   worldguard:
     mode: dynamic-passthrough
     manage-all-owned-regions: false
+    auto-manage-new-regions: true
     manage-existing-passthrough-regions: false
     included-regions: []
     excluded-regions:
@@ -21,5 +22,10 @@ integration:
 
 metrics:
   enabled: true
+
+diagnostics:
+  dry-run: true
+  log-transitions: true
+  operator-notice: true
 
 debug: false

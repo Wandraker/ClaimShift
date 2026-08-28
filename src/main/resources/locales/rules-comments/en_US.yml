@@ -4,14 +4,24 @@ protection:
   enabled:
   - Master switch for ClaimShift protection and dynamic WorldGuard access.
   presence-policy:
-  - Controls which owner-presence state is raidable.
-  - 'online-open: at least one owner online = OPEN; after the last owner leaves, the claim stays OPEN for offline-delay, then becomes PROTECTED.'
-  - 'offline-open: at least one owner online = PROTECTED; after the last owner leaves, the claim stays PROTECTED for offline-delay, then becomes OPEN.'
-  offline-delay:
-  - Delay after the last effective owner disconnects before the configured offline state takes effect.
-  - 'Examples: 30s, 1m, 10m, 1h. Use 0s for an immediate transition.'
+  - Controls which active-owner presence state is raidable.
+  - 'online-open: at least one active owner = OPEN; when active presence changes, owner-active/owner-inactive transition delays
+    are applied before switching state.'
+  - 'offline-open: at least one active owner = PROTECTED; after the last active owner becomes inactive, the claim remains
+    protected for owner-inactive, then becomes OPEN. When an active owner returns to an already OPEN claim, owner-active delays
+    protection recovery.'
+  transition-delays:
+    owner-active:
+    - Delay after the first active owner appears before the active-owner state takes effect.
+    - 'In the default offline-open policy this is the protection recovery delay. Fresh-install default: 5m. Use 0 or 0s for
+      an immediate transition.'
+    owner-inactive:
+    - Delay after the last active owner stops counting as present before the no-active-owner state takes effect.
+    - 'In the default offline-open policy this is the delay before a claim becomes raidable. Fresh-install default: 1h. Use
+      0 or 0s for an immediate transition.'
   protect-unknown-offline-owners:
-  - If true, claims whose offline timestamp is unknown after restart fail closed and remain protected until ClaimShift observes owner presence again.
+  - If true, claims whose offline timestamp is unknown after restart fail closed and remain protected until ClaimShift observes
+    owner presence again.
   trusted-players-bypass:
   - Allow owners and trusted/member players to use their own territory while ClaimShift protection is active.
   actions:
@@ -46,3 +56,51 @@ protection:
 notifications:
   cooldown:
   - Minimum time between repeated denial messages sent to the same player.
+presence:
+  smart:
+    enabled:
+    - Smart Presence can treat connected-but-idle owners as effectively absent.
+    idle-timeout:
+    - How long without meaningful activity before an online player becomes inactive.
+    minimum-movement-distance:
+    - Minimum distance from the last accepted movement anchor before movement counts as meaningful activity. Small jitter
+      and looking around do not refresh presence.
+    external-afk:
+      enabled:
+      - Use CMI/EssentialsX AFK state when those plugins are installed.
+      cmi:
+      - Use CMI AFK state when available.
+      essentialsx:
+      - Use EssentialsX AFK state when available.
+    patterns:
+      enabled:
+      - Detect simple low-frequency periodic keep-alive actions such as a jump or command every few minutes.
+      minimum-samples:
+      - Number of matching samples required before a periodic pattern stops counting as meaningful activity.
+      minimum-interval:
+      - Only low-frequency repetitions at or above this interval are considered AFK keep-alive candidates.
+      interval-tolerance:
+      - Maximum spread between repeated intervals for a sequence to be considered periodic.
+  anti-relog:
+    enabled:
+    - Optional anti-relog qualification. Disabled by default because it changes normal reconnect behaviour.
+    window:
+    - Reconnects within this window are subject to the qualification period.
+    qualification-time:
+    - How long a qualifying reconnect must remain online before it counts as active presence again.
+  max-continuous-presence:
+    enabled:
+    - Optional hard cap for one continuous protected online session. Disabled by default.
+    duration:
+    - Maximum continuous online time before the owner stops counting as active presence.
+raids:
+  enabled:
+  - Optional raid lock. A raid started while a claim is OPEN can keep it OPEN for the configured session window.
+  inactivity-timeout:
+  - End the raid session after this long without qualifying raid activity.
+  maximum-duration:
+  - Hard maximum raid-session duration. Use a generous value to prevent indefinite locks.
+  extend-on-activity:
+  - Refresh the inactivity timeout when qualifying raid activity continues.
+  trigger-actions:
+  - Protection action keys that may start or extend a raid while the claim is already OPEN.

@@ -1,9 +1,11 @@
-config-version: 2
+config-version: 4
 
 protection:
   enabled: true
-  presence-policy: online-open
-  offline-delay: 10m
+  presence-policy: offline-open
+  transition-delays:
+    owner-active: 5m
+    owner-inactive: 1h
   protect-unknown-offline-owners: true
   trusted-players-bypass: true
 
@@ -22,6 +24,42 @@ protection:
     pistons: true
     fluids: true
     fire: true
+
+presence:
+  smart:
+    enabled: true
+    idle-timeout: 20m
+    minimum-movement-distance: 3.0
+    external-afk:
+      enabled: true
+      cmi: true
+      essentialsx: true
+    patterns:
+      enabled: true
+      minimum-samples: 5
+      minimum-interval: 30s
+      interval-tolerance: 3s
+
+  anti-relog:
+    enabled: false
+    window: 5m
+    qualification-time: 2m
+
+  max-continuous-presence:
+    enabled: false
+    duration: 8h
+
+raids:
+  enabled: false
+  inactivity-timeout: 10m
+  maximum-duration: 30m
+  extend-on-activity: true
+  trigger-actions:
+    - block-break
+    - block-place
+    - containers
+    - interactions
+    - explosions
 
 notifications:
   cooldown: 1500ms

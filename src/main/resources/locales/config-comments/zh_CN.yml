@@ -13,6 +13,10 @@ integration:
     - WorldGuard 模式。dynamic-passthrough 会创建真实的可突袭窗口；overlay 只添加 ClaimShift 保护。
     manage-all-owned-regions:
     - 为 false 时，不会自动动态管理现有 WorldGuard 区域。
+    auto-manage-new-regions:
+    - 自动管理在 ClaimShift 运行期间首次创建且符合条件的 WorldGuard 区域。
+    - ClaimShift 首次识别某个世界时已经存在的区域会被记录为旧/静态区域，因此安装插件不会自动转换旧领地。
+    - 新区域仍可通过 claimshift-dynamic deny 或 excluded-regions 强制保持静态。
     manage-existing-passthrough-regions:
     - 为 false 时，ClaimShift 不会修改原本已有 passthrough ALLOW 的区域。
     included-regions:
@@ -26,6 +30,16 @@ integration:
     - Lands 当前仅支持 overlay。
 metrics:
   enabled:
-  - 启用匿名 bStats 统计。始终遵守服务器全局 bStats 退出设置。
+  - 通过 bStats 启用 ClaimShift 匿名统计。
+  - 除标准 bStats 数据外，仅提交 ClaimShift 的粗粒度配置：在线策略、领地提供器、WorldGuard 模式、消息语言、Smart Presence、周期模式检测和全局突袭会话开关。
+  - ClaimShift 自定义图表不会包含玩家标识、区域名称或服务器地址。
+  - 始终遵守 plugins/bStats/config.yml 中的服务器全局退出设置。
 debug:
 - 在服务器控制台启用更多 ClaimShift 诊断信息。
+diagnostics:
+  dry-run:
+  - 首次安装安全模式。启用时 ClaimShift 只预览决策，不修改 WorldGuard 状态，也不拦截操作。
+  log-transitions:
+  - 将 dry-run 状态变化记录到控制台；相同的重复预览会被抑制。
+  operator-notice:
+  - dry-run 启用时向管理员显示标题和聊天提示。

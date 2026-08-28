@@ -9,10 +9,19 @@ public record ClaimStatus(
         ClaimState state,
         Duration remaining,
         Set<UUID> onlineOwners,
-        boolean protectedNow
+        Set<UUID> effectiveOwners,
+        boolean protectedNow,
+        boolean raidActive,
+        Duration raidRemaining
 ) {
     public ClaimStatus {
-        remaining = remaining == null || remaining.isNegative() ? Duration.ZERO : remaining;
+        remaining = safe(remaining);
+        raidRemaining = safe(raidRemaining);
         onlineOwners = Set.copyOf(onlineOwners);
+        effectiveOwners = Set.copyOf(effectiveOwners);
+    }
+
+    private static Duration safe(Duration value) {
+        return value == null || value.isNegative() ? Duration.ZERO : value;
     }
 }

@@ -4,9 +4,18 @@ protection:
   enabled:
   - Interruptor principal de la protección de ClaimShift y del acceso dinámico de WorldGuard.
   presence-policy:
-  - 'Define qué estado de presencia permite raids: online-open u offline-open.'
-  offline-delay:
-  - 'Retraso tras desconectarse el último propietario efectivo. Ejemplos: 30s, 1m, 10m, 1h.'
+  - Controla qué estado de presencia de propietarios activos puede ser asaltado.
+  - 'online-open: al menos un propietario activo = OPEN; antes de cambiar se aplican los retrasos owner-active y owner-inactive.'
+  - 'offline-open: al menos un propietario activo = PROTECTED; tras desaparecer el último propietario activo, el claim sigue
+    protegido durante owner-inactive y después pasa a OPEN. Si un propietario activo vuelve a un claim ya abierto, owner-active
+    retrasa la recuperación de la protección.'
+  transition-delays:
+    owner-active:
+    - Retraso después de aparecer el primer propietario activo antes de aplicar el estado activo.
+    - 'En offline-open por defecto es el retraso de recuperación de protección. Valor inicial: 5m. Usa 0 o 0s para desactivarlo.'
+    owner-inactive:
+    - Retraso después de dejar de haber propietarios activos antes de aplicar el estado inactivo.
+    - 'En offline-open por defecto es el tiempo antes de que el claim sea asaltable. Valor inicial: 1h. Usa 0 o 0s para desactivarlo.'
   protect-unknown-offline-owners:
   - Si es true, los claims con hora de desconexión desconocida tras un reinicio permanecen protegidos.
   trusted-players-bypass:
@@ -43,3 +52,51 @@ protection:
 notifications:
   cooldown:
   - Tiempo mínimo entre mensajes de denegación repetidos al mismo jugador.
+presence:
+  smart:
+    enabled:
+    - Smart Presence puede tratar a propietarios conectados pero inactivos como ausentes.
+    idle-timeout:
+    - Tiempo sin actividad significativa antes de considerar inactivo a un jugador conectado.
+    minimum-movement-distance:
+    - Distancia mínima desde la última posición aceptada para que el movimiento cuente como actividad significativa. Pequeños
+      movimientos y mirar alrededor no reinician la presencia.
+    external-afk:
+      enabled:
+      - Usar el estado AFK de CMI/EssentialsX si esos plugins están instalados.
+      cmi:
+      - Usar el estado AFK de CMI cuando la integración esté disponible.
+      essentialsx:
+      - Usar el estado AFK de EssentialsX cuando la integración esté disponible.
+    patterns:
+      enabled:
+      - Detectar acciones periódicas simples de keep-alive, como saltar o ejecutar un comando cada pocos minutos.
+      minimum-samples:
+      - Cantidad de repeticiones coincidentes necesaria antes de dejar de contar el patrón como actividad significativa.
+      minimum-interval:
+      - Solo las repeticiones de baja frecuencia con este intervalo o mayor se consideran posibles keep-alive AFK.
+      interval-tolerance:
+      - Variación máxima entre intervalos para considerar periódica una secuencia.
+  anti-relog:
+    enabled:
+    - Calificación anti-relog opcional. Está desactivada por defecto porque cambia el comportamiento normal al reconectar.
+    window:
+    - Las reconexiones dentro de este intervalo deben superar el período de calificación.
+    qualification-time:
+    - Tiempo que una reconexión calificada debe permanecer en línea antes de volver a contar como presencia activa.
+  max-continuous-presence:
+    enabled:
+    - Límite duro opcional para una sesión continua en línea. Desactivado por defecto.
+    duration:
+    - Tiempo máximo conectado de forma continua antes de que el propietario deje de contar como activo.
+raids:
+  enabled:
+  - 'Bloqueo de raid opcional: un raid iniciado en OPEN puede mantener el claim abierto durante la sesión.'
+  inactivity-timeout:
+  - Finalizar la sesión de raid tras este tiempo sin actividad de raid válida.
+  maximum-duration:
+  - Duración máxima absoluta de una sesión de raid para evitar bloqueos indefinidos.
+  extend-on-activity:
+  - Reiniciar el temporizador de inactividad mientras continúe actividad de raid válida.
+  trigger-actions:
+  - Claves de acciones de protección que pueden iniciar o prolongar un raid mientras el claim ya está OPEN.

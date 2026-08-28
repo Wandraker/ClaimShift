@@ -174,4 +174,166 @@ class ClaimStateCalculatorTest {
             assertFalse(result.protectedNow());
         }
     }
+    @Test
+    void offlineOpenUsesOneHourInactiveDelayBeforeOpening() {
+        var result = ClaimStateCalculator.calculate(
+                Set.of(OWNER_A),
+                Set.of(),
+                Map.of(),
+                Map.of(OWNER_A, Duration.ofMinutes(35)),
+                PresencePolicy.OFFLINE_OPEN,
+                Duration.ofMinutes(5),
+                Duration.ofHours(1),
+                true,
+                false
+        );
+        assertEquals(ClaimState.GRACE, result.state());
+        assertEquals(Duration.ofMinutes(25), result.remaining());
+        assertTrue(result.protectedNow());
+    }
+
+    @Test
+    void offlineOpenBecomesOpenAfterInactiveDelay() {
+        var result = ClaimStateCalculator.calculate(
+                Set.of(OWNER_A),
+                Set.of(),
+                Map.of(),
+                Map.of(OWNER_A, Duration.ofHours(2)),
+                PresencePolicy.OFFLINE_OPEN,
+                Duration.ofMinutes(5),
+                Duration.ofHours(1),
+                true,
+                false
+        );
+        assertEquals(ClaimState.OPEN, result.state());
+        assertFalse(result.protectedNow());
+    }
+
+    @Test
+    void returningOwnerDoesNotInstantlyCloseAnAlreadyOpenClaim() {
+        var result = ClaimStateCalculator.calculate(
+                Set.of(OWNER_A),
+                Set.of(OWNER_A),
+                Map.of(OWNER_A, Duration.ofMinutes(2)),
+                Map.of(),
+                PresencePolicy.OFFLINE_OPEN,
+                Duration.ofMinutes(5),
+                Duration.ofHours(1),
+                true,
+                true
+        );
+        assertEquals(ClaimState.GRACE, result.state());
+        assertEquals(Duration.ofMinutes(3), result.remaining());
+        assertFalse(result.protectedNow());
+    }
+
+    @Test
+    void protectionReturnsAfterActiveDelayExpires() {
+        var result = ClaimStateCalculator.calculate(
+                Set.of(OWNER_A),
+                Set.of(OWNER_A),
+                Map.of(OWNER_A, Duration.ofMinutes(6)),
+                Map.of(),
+                PresencePolicy.OFFLINE_OPEN,
+                Duration.ofMinutes(5),
+                Duration.ofHours(1),
+                true,
+                true
+        );
+        assertEquals(ClaimState.PROTECTED, result.state());
+        assertTrue(result.protectedNow());
+    }
+
+    @Test
+    void reverseDelayDoesNotCreateAWindowWhenClaimNeverOpened() {
+        var result = ClaimStateCalculator.calculate(
+                Set.of(OWNER_A),
+                Set.of(OWNER_A),
+                Map.of(OWNER_A, Duration.ZERO),
+                Map.of(),
+                PresencePolicy.OFFLINE_OPEN,
+                Duration.ofMinutes(5),
+                Duration.ofHours(1),
+                true,
+                false
+        );
+        assertEquals(ClaimState.PROTECTED, result.state());
+        assertEquals(Duration.ZERO, result.remaining());
+        assertTrue(result.protectedNow());
+    }
+
+    @Test
+    void zeroTransitionDelaysAreImmediate() {
+        var inactive = ClaimStateCalculator.calculate(
+                Set.of(OWNER_A), Set.of(), Map.of(), Map.of(OWNER_A, Duration.ZERO),
+                PresencePolicy.OFFLINE_OPEN, Duration.ZERO, Duration.ZERO, true, false
+        );
+        assertEquals(ClaimState.OPEN, inactive.state());
+        assertFalse(inactive.protectedNow());
+
+        var active = ClaimStateCalculator.calculate(
+                Set.of(OWNER_A), Set.of(OWNER_A), Map.of(OWNER_A, Duration.ZERO), Map.of(),
+                PresencePolicy.OFFLINE_OPEN, Duration.ZERO, Duration.ZERO, true, true
+        );
+        assertEquals(ClaimState.PROTECTED, active.state());
+        assertTrue(active.protectedNow());
+    }
+
+    @Test
+    void onlineOpenCanAlsoUseTheReverseTransitionDelay() {
+        var result = ClaimStateCalculator.calculate(
+                Set.of(OWNER_A),
+                Set.of(OWNER_A),
+                Map.of(OWNER_A, Duration.ofMinutes(2)),
+                Map.of(),
+                PresencePolicy.ONLINE_OPEN,
+                Duration.ofMinutes(5),
+                Duration.ofHours(1),
+                true,
+                false
+        );
+        assertEquals(ClaimState.GRACE, result.state());
+        assertEquals(Duration.ofMinutes(3), result.remaining());
+        assertTrue(result.protectedNow());
+    }
+
+    @Test
+    void secondActiveOwnerDoesNotResetAnExistingActiveTransition() {
+        var result = ClaimStateCalculator.calculate(
+                Set.of(OWNER_A, OWNER_B),
+                Set.of(OWNER_A, OWNER_B),
+                Map.of(
+                        OWNER_A, Duration.ofMinutes(4),
+                        OWNER_B, Duration.ofMinutes(1)
+                ),
+                Map.of(),
+                PresencePolicy.ONLINE_OPEN,
+                Duration.ofMinutes(5),
+                Duration.ofHours(1),
+                true,
+                false
+        );
+        assertEquals(ClaimState.GRACE, result.state());
+        assertEquals(Duration.ofMinutes(1), result.remaining());
+        assertTrue(result.protectedNow());
+    }
+
+    @Test
+    void inactiveDelayDoesNotOpenAClaimThatIsAlreadyProtected() {
+        var result = ClaimStateCalculator.calculate(
+                Set.of(OWNER_A),
+                Set.of(),
+                Map.of(),
+                Map.of(OWNER_A, Duration.ofSeconds(20)),
+                PresencePolicy.ONLINE_OPEN,
+                Duration.ofMinutes(5),
+                Duration.ofHours(1),
+                true,
+                false
+        );
+        assertEquals(ClaimState.PROTECTED, result.state());
+        assertEquals(Duration.ZERO, result.remaining());
+        assertTrue(result.protectedNow());
+    }
+
 }

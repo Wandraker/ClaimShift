@@ -15,6 +15,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -405,7 +406,8 @@ public final class ProtectionListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onEntityExplosion(EntityExplodeEvent event) {
-        event.blockList().removeIf(block -> protection.checkSystem(block.getLocation(), ProtectionAction.EXPLOSIONS).denied());
+        Player actor = resolvePlayer(event.getEntity());
+        event.blockList().removeIf(block -> protection.check(actor, block.getLocation(), ProtectionAction.EXPLOSIONS).denied());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
@@ -430,6 +432,13 @@ public final class ProtectionListener implements Listener {
     }
 
     private Player resolvePlayer(Entity entity) {
+        return resolvePlayer(entity, 0);
+    }
+
+    private Player resolvePlayer(Entity entity, int depth) {
+        if (entity == null || depth > 4) {
+            return null;
+        }
         if (entity instanceof Player player) {
             return player;
         }
@@ -437,6 +446,15 @@ public final class ProtectionListener implements Listener {
             ProjectileSource shooter = projectile.getShooter();
             if (shooter instanceof Player player) {
                 return player;
+            }
+            if (shooter instanceof Entity shooterEntity && shooterEntity != entity) {
+                return resolvePlayer(shooterEntity, depth + 1);
+            }
+        }
+        if (entity instanceof TNTPrimed tnt) {
+            Entity source = tnt.getSource();
+            if (source != null && source != entity) {
+                return resolvePlayer(source, depth + 1);
             }
         }
         return null;

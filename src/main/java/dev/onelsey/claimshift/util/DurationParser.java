@@ -17,6 +17,9 @@ public final class DurationParser {
         }
 
         String normalized = input.trim().toLowerCase(Locale.ROOT).replace(" ", "");
+        if (normalized.equals("0")) {
+            return Duration.ZERO;
+        }
         Matcher matcher = TOKEN.matcher(normalized);
         long millis = 0L;
         int end = 0;

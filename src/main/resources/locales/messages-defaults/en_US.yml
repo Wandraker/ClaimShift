@@ -31,7 +31,8 @@ messages:
   info-label-messages-locale: Messages locale
   info-label-metrics: Anonymous metrics
   info-label-presence-policy: Presence policy
-  info-label-offline-delay: Offline transition delay
+  info-label-active-delay: Delay after owner becomes active
+  info-label-inactive-delay: Delay after last active owner becomes inactive
   info-label-managed-regions: Managed regions
   info-label-open-regions: Open regions
   info-label-grace-regions: Grace regions
@@ -43,8 +44,8 @@ messages:
   inspect-label-id: ID
   inspect-label-provider: Provider
   inspect-label-state: State
-  inspect-label-owners: Effective owners
-  inspect-label-online-owners: Online owners
+  inspect-label-owners: Claim owners
+  inspect-label-online-owners: Connected owners
   inspect-label-managed: Dynamic access
   inspect-label-remaining: Transition in
   scope-config: Configuration comments
@@ -59,11 +60,47 @@ messages:
   state-grace: GRACE
   state-protected: PROTECTED
   state-static: STATIC / UNMANAGED
-  presence-policy-online-open: Online owners = OPEN
-  presence-policy-offline-open: Offline owners = OPEN
+  presence-policy-online-open: Active owner = OPEN
+  presence-policy-offline-open: No active owners = OPEN
   provider-mode-dynamic-passthrough: Dynamic passthrough
   provider-mode-overlay: Overlay
   provider-mode-disabled: Disabled
   provider-mode-starting: Starting
   provider-mode-inactive: Inactive
   provider-mode-unknown: Unknown
+  dry-run-title: <warning><bold>ClaimShift SAFE SETUP</bold></warning>
+  dry-run-subtitle: <muted>Preview only — inspect a player claim before enabling enforcement</muted>
+  dry-run-notice: '<prefix> <warning>Safe dry-run setup is enabled.</warning> <muted>WorldGuard keeps its normal protection; ClaimShift only previews what it would change. Stand in a player claim and use <white><inspect-command></white>. When the result looks correct, enable enforcement with <white><command></white>.</muted>'
+  dry-run-status: '<prefix> <muted>Dry-run: <white><state></white>. WorldGuard protection remains normal while ClaimShift is preview-only. Inspect with <white><inspect-command></white>; finish setup with <white><command></white>.</muted>'
+  dry-run-enabled: <prefix> <warning>Dry-run enabled.</warning> <muted>ClaimShift is now preview-only. Disable with <white><command></white>.</muted>
+  dry-run-disabled: <prefix> <success>Dry-run disabled.</success> <muted>ClaimShift can now enforce configured region states.</muted>
+  dry-run-failed: <prefix> <error>Could not change dry-run mode.</error> <muted><reason></muted>
+  dry-run-usage: '<prefix> <warning>Usage: <white><command></white></warning>'
+  help-dry-run-description: Enable, disable or inspect safe dry-run diagnostics.
+  info-label-smart-presence: Smart Presence
+  info-label-pattern-detection: Pattern detection
+  info-label-dry-run: Dry-run diagnostics
+  info-label-raids: Raid sessions
+  info-label-active-raids: Active raid sessions
+  inspect-label-effective-owners: Active owners
+  inspect-label-raid-active: Raid session active
+  inspect-label-raid-remaining: Raid session remaining
+  raid-started-owner: '<prefix> <warning>Your claim <white><claim></white> is under raid.</warning> <muted>The raid lock remains active while qualifying activity continues (current window: <white><remaining></white>).</muted>'
+  raid-ended-owner: <prefix> <success>Raid session ended for <white><claim></white>.</success>
+  inspect-label-policy: Effective policy
+  inspect-label-active-delay: Active-owner transition delay
+  inspect-label-inactive-delay: Inactive-owner transition delay
+  inspect-label-raids-enabled: Raid sessions allowed
+  inspect-label-management-source: Management source
+  management-source-manual-allow: Manual claimshift-dynamic allow
+  management-source-manual-deny: Manual claimshift-dynamic deny
+  management-source-excluded: Excluded by configuration
+  management-source-included: Included by configuration
+  management-source-manage-all: manage-all-owned-regions
+  management-source-auto-new: Automatically dynamic (created after ClaimShift)
+  management-source-legacy-static: Legacy/static (existed before ClaimShift)
+  management-source-existing-passthrough: Existing passthrough ALLOW is preserved
+  management-source-ownerless: Static ownerless region
+  management-source-static: Static / not managed
+  provider-mode-dry-run: Dry-run preview
+  info-label-external-afk: External AFK sources
