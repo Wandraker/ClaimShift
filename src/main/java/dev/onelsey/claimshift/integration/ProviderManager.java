@@ -8,6 +8,7 @@ import org.bukkit.World;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -70,6 +71,11 @@ public final class ProviderManager {
 
     private void reloadNow() {
         ClaimProvider previous = active;
+        boolean continuingWorldGuardObservation = previous instanceof WorldGuardClaimProvider worldGuard
+                && worldGuard.lifecycleObservationActive();
+        Set<WorldGuardStateStore.RegionKey> logicalOpen = continuingWorldGuardObservation
+                ? ((WorldGuardClaimProvider) previous).logicalOpenSnapshot()
+                : Set.of();
         try {
             previous.shutdown();
         } catch (Throwable throwable) {
@@ -77,7 +83,9 @@ public final class ProviderManager {
         }
 
         String requested = configuration.pluginSettings().provider();
-        ClaimProvider selected = requested.equals("auto") ? autoDetect() : createIfAvailable(requested);
+        ClaimProvider selected = requested.equals("auto")
+                ? autoDetect(continuingWorldGuardObservation, logicalOpen)
+                : createIfAvailable(requested, continuingWorldGuardObservation, logicalOpen);
         active = selected;
         plugin.getLogger().info("Claim provider: " + selected.displayName() + " " + selected.version()
                 + " [" + selected.diagnostics().mode() + "]");
@@ -92,9 +100,12 @@ public final class ProviderManager {
         }
     }
 
-    private ClaimProvider autoDetect() {
+    private ClaimProvider autoDetect(
+            boolean continuingWorldGuardObservation,
+            Set<WorldGuardStateStore.RegionKey> logicalOpen
+    ) {
         for (String id : AUTO_PRIORITY) {
-            ClaimProvider provider = createIfAvailable(id);
+            ClaimProvider provider = createIfAvailable(id, continuingWorldGuardObservation, logicalOpen);
             if (provider.available()) {
                 return provider;
             }
@@ -102,7 +113,11 @@ public final class ProviderManager {
         return new NoopClaimProvider();
     }
 
-    private ClaimProvider createIfAvailable(String id) {
+    private ClaimProvider createIfAvailable(
+            String id,
+            boolean continuingWorldGuardObservation,
+            Set<WorldGuardStateStore.RegionKey> logicalOpen
+    ) {
         String pluginName = switch (id) {
             case "lands" -> "Lands";
             case "worldguard" -> "WorldGuard";
@@ -117,7 +132,14 @@ public final class ProviderManager {
 
         try {
             if (id.equals("worldguard")) {
-                return new WorldGuardClaimProvider(plugin, configuration, states, worldGuardRegionRegistry);
+                return new WorldGuardClaimProvider(
+                        plugin,
+                        configuration,
+                        states,
+                        worldGuardRegionRegistry,
+                        continuingWorldGuardObservation ? logicalOpen : Set.of(),
+                        !continuingWorldGuardObservation
+                );
             }
             if (id.equals("lands")) {
                 return new LandsClaimProvider(plugin);

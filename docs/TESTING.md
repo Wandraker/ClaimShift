@@ -445,6 +445,29 @@ Expected:
 - the preview does not modify WorldGuard or expose player chat/command content.
 
 
+## 28. Same-provider reload during reverse transition
+
+Use `offline-open` with a short `owner-active` delay. Let a managed claim become OPEN, then have an owner return so the claim is in the OPEN-side GRACE period. Run `/claimshift reload` before that delay expires.
+
+Expected:
+
+- the reload does not instantly make the claim PROTECTED;
+- `/claimshift inspect` still reports the remaining reverse transition rather than treating the replacement provider as freshly protected;
+- after the original active-condition delay expires, protection returns normally;
+- the same continuity applies when toggling dry-run while WorldGuard remains the selected dynamic provider.
+
+## 29. WorldGuard provider reactivation baseline
+
+Start with dynamic WorldGuard active, then switch ClaimShift to another provider or disable WorldGuard dynamic control. Create an owned WorldGuard region while ClaimShift is not observing the dynamic lifecycle, then switch/re-enable ClaimShift back to dynamic WorldGuard.
+
+Expected:
+
+- the previously registered WorldGuard regions keep their existing lifecycle classifications;
+- the region created while WorldGuard was not the active ClaimShift provider is conservatively classified legacy/static rather than auto-new;
+- a region created after WorldGuard is active again can still become `AUTO_DYNAMIC` when `auto-manage-new-regions` is enabled;
+- a normal WorldGuard-to-WorldGuard `/claimshift reload` does not reclassify genuinely new regions from the continuously observed session as legacy.
+
+
 ## Bug report bundle
 
 If any step fails, attach:

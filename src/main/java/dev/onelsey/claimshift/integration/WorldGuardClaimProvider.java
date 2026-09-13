@@ -53,6 +53,7 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
     private final String version;
     private final WorldGuardStateStore stateStore;
     private final WorldGuardRegionRegistry regionRegistry;
+    private final boolean lifecycleObservationActive;
     private final AtomicBoolean reconcileQueued = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
     private final Map<WorldGuardStateStore.RegionKey, String> dryRunPreview = new HashMap<>();
@@ -73,7 +74,9 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
             ClaimShiftPlugin plugin,
             ConfigurationService configuration,
             ClaimStateService states,
-            WorldGuardRegionRegistry regionRegistry
+            WorldGuardRegionRegistry regionRegistry,
+            Set<WorldGuardStateStore.RegionKey> logicalOpenSeed,
+            boolean conservativeBootstrap
     ) {
         this.plugin = plugin;
         this.configuration = configuration;
@@ -85,8 +88,18 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
         }
         this.version = worldGuard.getPluginMeta().getVersion();
         this.stateStore = new WorldGuardStateStore(plugin);
+        this.lifecycleObservationActive = dynamicModeEnabled();
+        Set<WorldGuardStateStore.RegionKey> seed = logicalOpenSeed == null ? Set.of() : logicalOpenSeed;
+        if (lifecycleObservationActive) {
+            if (configuration.pluginSettings().diagnostics().dryRun()) {
+                dryRunProjectedOpen.addAll(seed);
+            } else {
+                runtimeProjectedOpen.addAll(seed);
+            }
+        }
         recoverStaleOverrides();
-        if (regionRegistry.beginSessionBootstrap()) {
+        boolean firstSessionBootstrap = regionRegistry.beginSessionBootstrap();
+        if (conservativeBootstrap || firstSessionBootstrap) {
             bootstrapLoadedWorlds();
         }
         if (dynamicModeEnabled()) {
@@ -96,6 +109,16 @@ public final class WorldGuardClaimProvider implements ClaimProvider {
             reconcileSafely();
         }
         startReconciler();
+    }
+
+    boolean lifecycleObservationActive() {
+        return lifecycleObservationActive;
+    }
+
+    Set<WorldGuardStateStore.RegionKey> logicalOpenSnapshot() {
+        Set<WorldGuardStateStore.RegionKey> snapshot = new HashSet<>(runtimeProjectedOpen);
+        snapshot.addAll(dryRunProjectedOpen);
+        return Set.copyOf(snapshot);
     }
 
     @Override public String id() { return "worldguard"; }

@@ -102,6 +102,8 @@ Inspection can see a top-priority WorldGuard region even when it is intentionall
 
 ClaimShift keeps a persistent `region-registry.yml` classification for WorldGuard regions. Regions already present when a loaded world is first observed in a server session are recorded as `LEGACY_STATIC`; eligible regions first discovered later while ClaimShift is actively running can be recorded as `AUTO_DYNAMIC` when `auto-manage-new-regions` is enabled. This lets a server install ClaimShift without converting historical regions while making newly created player claims dynamic automatically. Explicit `claimshift-dynamic` flags and broad config selectors remain higher-level administrator controls.
 
+If WorldGuard stops being the active dynamic provider (including a period with dynamic control disabled) and later becomes active again in the same server process, currently loaded unknown regions are conservatively baselined as legacy/static before reconciliation. A normal dynamic WorldGuard-to-WorldGuard ClaimShift configuration reload does not re-baseline the world, because ClaimShift continuously observed that world across the reload.
+
 ### Per-region policy overrides
 
 Additional WorldGuard flags can tune a managed region without creating a separate global configuration:
@@ -140,6 +142,8 @@ WorldGuard reconciliation and provider reloads are dispatched through Paper's `G
 `RegionManager#saveChanges()` persists a whole world's region manager. When ClaimShift has multiple runtime passthrough overrides in the same manager, saving one restored region must not accidentally serialize another region's temporary OPEN value. Before a manager save, ClaimShift stages every recorded region in that manager back to its captured original passthrough, saves once, then reapplies only runtime overrides that are still active. Recovery metadata is removed only after the save succeeds.
 
 `runtime-worldguard.yml` is treated as safety-critical recovery state. A malformed recovery file is not silently discarded because that could strand a temporary passthrough override after an interrupted run.
+
+A same-provider `/claimshift reload` transfers the in-memory logical OPEN projection into the replacement WorldGuard provider before the old temporary passthrough overrides are restored. This keeps an in-progress reverse transition, such as the default five-minute protection-return delay, from being shortened merely by reloading ClaimShift configuration. The projection is not carried across periods where WorldGuard dynamic control is disabled or another provider is active.
 
 ## Time model
 
