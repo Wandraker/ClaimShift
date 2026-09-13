@@ -2,6 +2,7 @@ package dev.onelsey.claimshift.protection;
 
 import dev.onelsey.claimshift.ClaimShiftPlugin;
 import dev.onelsey.claimshift.config.PresenceSettings;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
@@ -44,6 +45,8 @@ public final class PresenceService {
         volatile long effectiveSinceNanos;
         volatile long externalAfkSinceNanos;
         volatile long relogBlockedUntilNanos;
+        volatile boolean diskLastSeenResolved;
+        volatile long diskLastSeenEpochMillis;
         volatile String movementWorld;
         volatile double movementX;
         volatile double movementY;
@@ -72,6 +75,8 @@ public final class PresenceService {
             state.lastMeaningfulActivityNanos = now;
             state.effectiveSinceNanos = now;
             state.relogBlockedUntilNanos = 0L;
+            state.diskLastSeenResolved = false;
+            state.diskLastSeenEpochMillis = 0L;
         }
         externalAfk.refresh(settings);
     }
@@ -89,6 +94,8 @@ public final class PresenceService {
         state.effectiveSinceNanos = now;
         state.externalAfkSinceNanos = 0L;
         state.relogBlockedUntilNanos = 0L;
+        state.diskLastSeenResolved = false;
+        state.diskLastSeenEpochMillis = 0L;
         state.movementAnchorSet = false;
         externalAfk.invalidate(playerId);
         if (settings.antiRelogEnabled() && previousQuit > 0L) {
@@ -142,15 +149,31 @@ public final class PresenceService {
         long now = System.nanoTime();
 
         if (!connected) {
-            if (state == null || state.lastQuitNanos <= 0L) {
-                return inactive(false, Optional.empty(), "offline-unknown");
+            if (state != null && state.lastQuitNanos > 0L) {
+                long absentSince = state.lastQuitNanos;
+                if (settings.smartEnabled() && state.lastMeaningfulActivityNanos > 0L) {
+                    long idleSince = addSaturated(state.lastMeaningfulActivityNanos, safeNanos(settings.idleTimeout()));
+                    if (idleSince < absentSince) absentSince = idleSince;
+                }
+                return inactive(false, Optional.of(durationSince(absentSince, now)), "offline");
             }
-            long absentSince = state.lastQuitNanos;
-            if (settings.smartEnabled() && state.lastMeaningfulActivityNanos > 0L) {
-                long idleSince = addSaturated(state.lastMeaningfulActivityNanos, safeNanos(settings.idleTimeout()));
-                if (idleSince < absentSince) absentSince = idleSince;
+
+            // Monotonic runtime timestamps intentionally disappear on restart. For
+            // a real player UUID, recover the absence age from Paper's persisted
+            // last-seen timestamp instead of treating the owner as unknown forever.
+            // The lookup is performed at most once per UUID per ClaimShift runtime.
+            PlayerState offlineState = state == null
+                    ? states.computeIfAbsent(playerId, ignored -> new PlayerState())
+                    : state;
+            long lastSeenEpochMillis = resolveDiskLastSeen(playerId, offlineState);
+            Optional<Duration> persistedAge = PresenceAgeResolver.fromLastSeen(
+                    lastSeenEpochMillis,
+                    System.currentTimeMillis()
+            );
+            if (persistedAge.isPresent()) {
+                return inactive(false, persistedAge, "offline-last-seen");
             }
-            return inactive(false, Optional.of(durationSince(absentSince, now)), "offline");
+            return inactive(false, Optional.empty(), "offline-unknown");
         }
 
         if (!settings.smartEnabled()) {
@@ -285,6 +308,20 @@ public final class PresenceService {
                     settings.patternMinimumInterval(),
                     settings.patternIntervalTolerance()
             );
+        }
+    }
+
+    private long resolveDiskLastSeen(UUID playerId, PlayerState state) {
+        if (state.diskLastSeenResolved) {
+            return state.diskLastSeenEpochMillis;
+        }
+        synchronized (state) {
+            if (!state.diskLastSeenResolved) {
+                OfflinePlayer offline = plugin.getServer().getOfflinePlayer(playerId);
+                state.diskLastSeenEpochMillis = Math.max(0L, offline.getLastSeen());
+                state.diskLastSeenResolved = true;
+            }
+            return state.diskLastSeenEpochMillis;
         }
     }
 
